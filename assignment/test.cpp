@@ -43,6 +43,48 @@ inline void drawCylinder(float r, float h, int slices = 24) {
     gluDeleteQuadric(q);
 }
 
+void drawVestEdges() {
+    setMaterial(0.65f, 0.12f, 0.10f); // slightly brighter red
+    // left edge
+    glPushMatrix();
+    glTranslatef(-0.42f, 0.05f, 0.35f);
+    glScalef(0.08f, 1.05f, 0.04f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+    // right edge
+    glPushMatrix();
+    glTranslatef(0.42f, 0.05f, 0.35f);
+    glScalef(0.08f, 1.05f, 0.04f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+}
+
+// --- proportion knobs---
+struct ModelScale {
+    float torsoH = 1.30f;  // was 1.4
+    float torsoTopR = 0.62f;  // taper
+    float torsoBotR = 0.78f;
+
+    float headLift = 1.05f;  // how high head unit sits above torso origin
+    float headR = 0.72f;
+
+    float shoulderX = 1.08f;  // shoulders slightly wider
+    float shoulderY = 0.58f;
+
+    float upperArmR = 0.24f;  // chunkier, shorter arms
+    float upperArmH = 0.60f;
+    float lowerArmR = 0.22f;
+    float lowerArmH = 0.48f;
+    float jointR = 0.17f;
+
+    float shortSleeveDrop = 0.85f; // where shorts begin
+    float shortSleeveLen = 0.42f;
+
+    float hipX = 0.36f;
+    float upperLegH = 0.50f;
+    float lowerLegH = 0.48f;
+} MS;
+
 // ---------- Sizes for arms ----------
 struct Sizes {
     float shoulderX = 1.02f;  // how far from center
@@ -71,8 +113,8 @@ void drawTorso() {
     glRotatef(-90, 1, 0, 0);
     GLUquadric* q = gluNewQuadric();
     gluQuadricNormals(q, GLU_SMOOTH);
-    gluCylinder(q, 0.75f, 0.65f, 1.4f, 36, 1);
-    gluDisk(q, 0.0, 0.75f, 36, 1); // bottom cap
+    gluCylinder(q, MS.torsoBotR, MS.torsoTopR, MS.torsoH, 40, 1);
+    gluDisk(q, 0.0, MS.torsoBotR, 40, 1);
     gluDeleteQuadric(q);
     glPopMatrix();
 
@@ -84,11 +126,13 @@ void drawTorso() {
     glutSolidCube(1.0f);
     glPopMatrix();
 
+	drawVestEdges();
+
     // vest skirt flap
     setMaterial(0.55f, 0.20f, 0.12f);
     glPushMatrix();
-    glTranslatef(0.0f, -0.9f, 0.0f);
-    glScalef(1.3f, 0.3f, 0.6f);
+    glTranslatef(0.0f, -0.75f, 0.0f);          // slightly higher
+    glScalef(1.25f, 0.28f, 0.62f);
     glutSolidCube(1.0f);
     glPopMatrix();
 }
@@ -104,83 +148,112 @@ void drawHeadUnit() {
 
     // head
     setMaterial(1.0f, 0.87f, 0.77f);
-    glPushMatrix(); glTranslatef(0.0f, 0.8f, 0.0f); drawSphere(0.7f, 36, 24); glPopMatrix();
+    glPushMatrix(); glTranslatef(0.0f, 0.75f, 0.0f); drawSphere(MS.headR, 36, 24); glPopMatrix();
 
     // hair cap
     setMaterial(0.08f, 0.08f, 0.08f);
-    glPushMatrix(); glTranslatef(0.0f, 0.8f, 0.0f); glScalef(1.05f, 0.85f, 1.05f); drawSphere(0.72f, 36, 24); glPopMatrix();
+    glPushMatrix(); glTranslatef(0.0f, 0.75f, 0.0f); glScalef(1.05f, 0.85f, 1.05f); drawSphere(MS.headR + 0.02f, 36, 24); glPopMatrix();
 
     // hair buns
     setMaterial(0.08f, 0.08f, 0.08f);
     glPushMatrix(); glTranslatef(-0.6f, 1.1f, 0.0f); drawSphere(0.22f); glPopMatrix();
     glPushMatrix(); glTranslatef(0.6f, 1.1f, 0.0f); drawSphere(0.22f); glPopMatrix();
+
+    // ears 
+    setMaterial(1.0f, 0.87f, 0.77f);
+    glPushMatrix(); glTranslatef(-0.78f, 0.62f, 0.00f); drawSphere(0.20f, 24, 16); glPopMatrix();
+    glPushMatrix(); glTranslatef(0.78f, 0.62f, 0.00f); drawSphere(0.20f, 24, 16); glPopMatrix();
 }
 
 void drawArmChain(bool left) {
     float side = left ? -1.f : 1.f;
 
-    glTranslatef(side * SZ.shoulderX, SZ.shoulderY, 0.0f);   // shoulder anchor
+    glTranslatef(side * MS.shoulderX, MS.shoulderY, 0.0f);
 
-    // shoulder cap
-    setMaterial(1.0f, 0.85f, 0.75f); drawSphere(0.18f);
+    setMaterial(1.0f, 0.85f, 0.75f);
+    drawSphere(0.19f);                         // shoulder cap
 
     // upper arm
-    glTranslatef(0.0f, -SZ.upperH * 0.5f, 0.0f);
-    drawArmSegment(SZ.upperR, SZ.upperH);
+    glTranslatef(0.0f, -MS.upperArmH * 0.5f, 0.0f);
+    glPushMatrix(); glRotatef(-90, 1, 0, 0); drawCylinder(MS.upperArmR, MS.upperArmH, 32); glPopMatrix();
 
     // elbow
-    glTranslatef(0.0f, -SZ.upperH * 0.5f, 0.0f);
-    drawSphere(SZ.jointR);
+    glTranslatef(0.0f, -MS.upperArmH * 0.5f, 0.0f);
+    drawSphere(MS.jointR);
 
     // forearm
-    glTranslatef(0.0f, -SZ.lowerH * 0.5f, 0.0f);
-    drawArmSegment(SZ.lowerR, SZ.lowerH);
+    glTranslatef(0.0f, -MS.lowerArmH * 0.5f, 0.0f);
+    glPushMatrix(); glRotatef(-90, 1, 0, 0); drawCylinder(MS.lowerArmR, MS.lowerArmH, 32); glPopMatrix();
 
     // wrist + hand
-    glTranslatef(0.0f, -SZ.lowerH * 0.5f, 0.0f);
-    drawSphere(SZ.jointR * 0.9f);
-    drawHandFist();
+    glTranslatef(0.0f, -MS.lowerArmH * 0.5f, 0.0f);
+    drawSphere(MS.jointR * 0.9f);
+    setMaterial(1.0f, 0.85f, 0.75f);
+    glPushMatrix(); glScalef(1.0f, 0.85f, 1.0f); drawSphere(0.24f, 28, 18); glPopMatrix();
 }
 
 void drawShorts() {
     setMaterial(0.35f, 0.15f, 0.08f);
     // left sleeve
     glPushMatrix();
-    glTranslatef(-0.35f, -0.95f, 0.0f);
+    glTranslatef(-MS.hipX, -MS.shortSleeveDrop, 0.0f);
     glRotatef(-90, 1, 0, 0);
     GLUquadric* q = gluNewQuadric();
-    gluCylinder(q, 0.35f, 0.40f, 0.45f, 28, 1);
+    gluCylinder(q, 0.36f, 0.42f, MS.shortSleeveLen, 28, 1);
     gluDeleteQuadric(q);
     glPopMatrix();
     // right sleeve
     glPushMatrix();
-    glTranslatef(0.35f, -0.95f, 0.0f);
+    glTranslatef(MS.hipX, -MS.shortSleeveDrop, 0.0f);
     glRotatef(-90, 1, 0, 0);
     GLUquadric* q2 = gluNewQuadric();
-    gluCylinder(q2, 0.35f, 0.40f, 0.45f, 28, 1);
+    gluCylinder(q2, 0.36f, 0.42f, MS.shortSleeveLen, 28, 1);
     gluDeleteQuadric(q2);
     glPopMatrix();
-    // front panel
-    glPushMatrix(); glTranslatef(0.0f, -0.90f, 0.25f); glScalef(0.9f, 0.35f, 0.05f); glutSolidCube(1.0f); glPopMatrix();
+    // front cloth
+    glPushMatrix(); glTranslatef(0.0f, -0.88f, 0.25f); glScalef(0.9f, 0.30f, 0.06f); glutSolidCube(1.0f); glPopMatrix();
 }
 
 void drawLeg(bool left) {
     float side = left ? -1.f : 1.f;
     setMaterial(1.0f, 0.85f, 0.75f);
-    // upper leg
-    glPushMatrix(); glTranslatef(side * 0.35f, -1.20f, 0.0f); glRotatef(-90, 1, 0, 0); drawCylinder(0.22f, 0.55f, 28); glPopMatrix();
-    // lower leg
-    glPushMatrix(); glTranslatef(side * 0.35f, -1.65f, 0.0f); glRotatef(-90, 1, 0, 0); drawCylinder(0.20f, 0.55f, 28); glPopMatrix();
+    // upper
+    glPushMatrix(); glTranslatef(side * MS.hipX, -1.10f, 0.0f); glRotatef(-90, 1, 0, 0); drawCylinder(0.22f, MS.upperLegH, 28); glPopMatrix();
+    // lower
+    glPushMatrix(); glTranslatef(side * MS.hipX, -1.10f - MS.upperLegH, 0.0f); glRotatef(-90, 1, 0, 0); drawCylinder(0.20f, MS.lowerLegH, 28); glPopMatrix();
     // shoe
     setMaterial(0.15f, 0.15f, 0.15f);
-    glPushMatrix(); glTranslatef(side * 0.35f, -2.0f, 0.12f); glScalef(0.55f, 0.25f, 0.9f); glutSolidCube(1.0f); glPopMatrix();
+    glPushMatrix(); glTranslatef(side * MS.hipX, -1.10f - MS.upperLegH - MS.lowerLegH - 0.15f, 0.12f); glScalef(0.55f, 0.25f, 0.9f); glutSolidCube(1.0f); glPopMatrix();
+}
+
+void drawBraidedBelt() {
+    setMaterial(0.90f, 0.70f, 0.15f); // yellow rope
+    const int  N = 18;
+    const float R = 0.62f;     // belt radius around torso
+    const float y = -0.25f;    // belt height (y)
+    for (int i = 0;i < N;i++) {
+        float t = (float)i / N * 2.0f * (float)M_PI;
+        float x = R * cosf(t);
+        float z = R * sinf(t);
+        glPushMatrix();
+        glTranslatef(x, y, z);
+        glRotatef(-t * 180.0f / (float)M_PI, 0, 1, 0);    // twist slightly
+        glRotatef(90, 1, 0, 0);
+        glutSolidTorus(0.04f, 0.10f, 10, 14);
+        glPopMatrix();
+    }
+
+    // two hanging ropes
+    glPushMatrix(); glTranslatef(0.10f, y - 0.05f, 0.55f); glRotatef(90, 1, 0, 0); glutSolidTorus(0.04f, 0.10f, 10, 14); glPopMatrix();
+    glPushMatrix(); glTranslatef(-0.10f, y - 0.30f, 0.55f); glRotatef(70, 1, 0, 0); glutSolidTorus(0.04f, 0.10f, 10, 14); glPopMatrix();
 }
 
 // ---------- Character assembly ----------
 void drawCharacter() {
     glPushMatrix();
     drawTorso();
-    glPushMatrix(); glTranslatef(0.0f, 1.2f, 0.0f); drawHeadUnit(); glPopMatrix();
+    glPushMatrix(); glTranslatef(0.0f, MS.headLift, 0.0f); drawHeadUnit(); glPopMatrix();
+    drawBraidedBelt();
     glPopMatrix();
 
     glPushMatrix(); drawArmChain(true); glPopMatrix();
