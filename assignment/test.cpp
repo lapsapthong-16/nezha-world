@@ -1,5 +1,22 @@
-// BMCS2173 Starter: hierarchical model (torso + head + arms + shorts/legs)
-// Uses FreeGLUT (immediate mode)
+// BMCS2173 Character (blockout)
+// FreeGLUT (immediate mode)
+// ------------------------------------------------------------
+// How this file is organized:
+//
+// 1) Includes & globals
+// 2) Palette + material helpers  [EDIT COLORS HERE]
+// 3) Primitive helpers           [OK TO REUSE]
+// 4) Model parameters            [TWEAK PROPORTIONS HERE]
+// 5) Body-part builders          [REPLACE SINGLE FUNCS LATER]
+//      - Torso
+//      - HeadUnit
+//      - ArmChain
+//      - Shorts
+//      - Leg
+//      - BraidedBelt
+// 6) Character assembly          [usually no changes]
+// 7) GL/GLUT setup + callbacks   [camera, lighting, input]
+// ------------------------------------------------------------
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -9,33 +26,70 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-// ---------- Camera state ----------
+// ============================================================
+// 1) CAMERA / VIEW GLOBALS
+// ============================================================
 double camDist = 8.0;
 double camYaw = 25.0;
 double camPitch = 15.0;
 
-// ---------- Helpers ----------
+// ============================================================
+// 2) PALETTE + MATERIAL HELPERS
+//    Keep all colors in one place and use tiny wrappers.
+// ============================================================
+namespace Palette {
+    // Base colors
+    constexpr float SKIN[3] = { 1.00f, 0.85f, 0.75f };
+    constexpr float HAIR[3] = { 0.08f, 0.08f, 0.08f };
+    constexpr float HAIR_RIM[3] = { 0.06f, 0.06f, 0.06f };
+    constexpr float VEST[3] = { 0.55f, 0.20f, 0.12f };
+    constexpr float VEST_EDGE[3] = { 0.65f, 0.12f, 0.10f };
+    constexpr float SHIRT[3] = { 0.62f, 0.62f, 0.62f };
+    constexpr float BOOT[3] = { 0.15f, 0.15f, 0.15f };
+    constexpr float ROPE[3] = { 0.90f, 0.70f, 0.15f };
+    constexpr float SCARF[3] = { 0.80f, 0.10f, 0.10f };
+    constexpr float GROUND[3] = { 0.10f, 0.12f, 0.14f };
+    constexpr float CLEAR[4] = { 0.05f, 0.06f, 0.08f, 1.0f };
+}
+
+// Generic material (diffuse/spec set; quick to call)
 inline void setMaterial(float r, float g, float b, float shininess = 16.0f) {
     const GLfloat diff[] = { r, g, b, 1.0f };
     const GLfloat amb[] = { r * 0.25f, g * 0.25f, b * 0.25f, 1.0f };
-    const GLfloat spec[] = { 0.9f, 0.9f, 0.9f, 1.0f };
+    const GLfloat spec[] = { 0.90f, 0.90f, 0.90f, 1.0f };
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diff);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
 }
 
+// Hair-specific (low specular so highlights don’t bloom)
 inline void setMaterialHair(float r, float g, float b, float shininess = 8.0f) {
     const GLfloat diff[] = { r, g, b, 1.0f };
     const GLfloat amb[] = { r * 0.25f, g * 0.25f, b * 0.25f, 1.0f };
-    const GLfloat spec[] = { 0.15f, 0.15f, 0.15f, 1.0f }; // much weaker highlight
+    const GLfloat spec[] = { 0.15f, 0.15f, 0.15f, 1.0f };
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diff);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
 }
 
-inline void drawSphere(float radius, int slices = 24, int stacks = 18) {
+// Convenience wrappers (so calls read like the concept)
+inline void matSkin() { setMaterial(Palette::SKIN[0], Palette::SKIN[1], Palette::SKIN[2]); }
+inline void matHair() { setMaterialHair(Palette::HAIR[0], Palette::HAIR[1], Palette::HAIR[2]); }
+inline void matHairRim() { setMaterialHair(Palette::HAIR_RIM[0], Palette::HAIR_RIM[1], Palette::HAIR_RIM[2]); }
+inline void matVest() { setMaterial(Palette::VEST[0], Palette::VEST[1], Palette::VEST[2]); }
+inline void matVestEdge() { setMaterial(Palette::VEST_EDGE[0], Palette::VEST_EDGE[1], Palette::VEST_EDGE[2]); }
+inline void matShirt() { setMaterial(Palette::SHIRT[0], Palette::SHIRT[1], Palette::SHIRT[2]); }
+inline void matBoot() { setMaterial(Palette::BOOT[0], Palette::BOOT[1], Palette::BOOT[2]); }
+inline void matRope() { setMaterial(Palette::ROPE[0], Palette::ROPE[1], Palette::ROPE[2]); }
+inline void matScarf() { setMaterial(Palette::SCARF[0], Palette::SCARF[1], Palette::SCARF[2]); }
+inline void matGround() { setMaterial(Palette::GROUND[0], Palette::GROUND[1], Palette::GROUND[2]); }
+
+// ============================================================
+// 3) PRIMITIVE HELPERS
+// ============================================================
+inline void drawSpherePrim(float radius, int slices = 24, int stacks = 18) {
     GLUquadric* q = gluNewQuadric();
     gluQuadricNormals(q, GLU_SMOOTH);
     gluSphere(q, radius, slices, stacks);
@@ -51,31 +105,10 @@ inline void drawCappedCylinder(float r, float h, int slices = 24) {
     gluDeleteQuadric(q);
 }
 
-inline void drawRoundedBox(float sx, float sy, float sz, float r) {
-    // very simple rounded box using scaled sphere for “softness”
-    glPushMatrix();
-    glScalef(sx, sy, sz);
-    drawSphere(r);
-    glPopMatrix();
-}
-
-void drawVestEdges() {
-    setMaterial(0.65f, 0.12f, 0.10f); // slightly brighter red
-    // left edge
-    glPushMatrix();
-    glTranslatef(-0.42f, 0.05f, 0.35f);
-    glScalef(0.08f, 1.05f, 0.04f);
-    glutSolidCube(1.0f);
-    glPopMatrix();
-    // right edge
-    glPushMatrix();
-    glTranslatef(0.42f, 0.05f, 0.35f);
-    glScalef(0.08f, 1.05f, 0.04f);
-    glutSolidCube(1.0f);
-    glPopMatrix();
-}
-
-// --- proportion knobs (tuned to ref: big head, short torso, chunky limbs) ---
+// ============================================================
+// 4) MODEL PARAMETERS (proportions)
+//    Central place to tweak; everything reads from here.
+// ============================================================
 struct ModelScale {
     // torso: shorter, a bit boxy with small taper
     float torsoH = 1.02f;
@@ -107,22 +140,45 @@ struct ModelScale {
     float lowerLegH = 0.42f;
 } MS;
 
-// ---------- Body parts ----------
+// ============================================================
+// 5) BODY-PART BUILDERS (each is a self-contained unit)
+//    You can replace any single function below later.
+// ============================================================
+
+// ---------- Torso ----------
+void drawVestEdges() {
+    matVestEdge();
+    // left edge
+    glPushMatrix();
+    glTranslatef(-0.42f, 0.05f, 0.35f);
+    glScalef(0.08f, 1.05f, 0.04f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+    // right edge
+    glPushMatrix();
+    glTranslatef(0.42f, 0.05f, 0.35f);
+    glScalef(0.08f, 1.05f, 0.04f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+}
+
 void drawTorso() {
-    // vest (slight taper cylinder)
-    setMaterial(0.55f, 0.20f, 0.12f);
+    // vest (slight taper cylinder, capped)
+    matVest();
     glPushMatrix();
     glRotatef(-90, 1, 0, 0);
     GLUquadric* q = gluNewQuadric();
     gluQuadricNormals(q, GLU_SMOOTH);
     gluCylinder(q, MS.torsoBotR, MS.torsoTopR, MS.torsoH, 44, 1);
-    gluDisk(q, 0.0, MS.torsoBotR, 44, 1); // bottom cap
-    glPushMatrix(); glTranslatef(0, 0, MS.torsoH); gluDisk(q, 0.0, MS.torsoTopR, 44, 1); glPopMatrix(); // top cap (avoid light leaks)
+    gluDisk(q, 0.0, MS.torsoBotR, 44, 1);                      // bottom cap
+    glPushMatrix(); glTranslatef(0, 0, MS.torsoH);
+    gluDisk(q, 0.0, MS.torsoTopR, 44, 1);                  // top cap
+    glPopMatrix();
     gluDeleteQuadric(q);
     glPopMatrix();
 
-    // chest plate (flat panel like in ref)
-    setMaterial(0.62f, 0.62f, 0.62f);
+    // chest plate (flat panel like ref)
+    matShirt();
     glPushMatrix();
     glTranslatef(0.0f, 0.06f, 0.30f);
     glScalef(0.95f, 0.95f, 0.18f);
@@ -130,7 +186,7 @@ void drawTorso() {
     glPopMatrix();
 
     // narrow shoulder yoke
-    setMaterial(0.55f, 0.20f, 0.12f);
+    matVest();
     glPushMatrix();
     glTranslatef(0.0f, MS.torsoH * 0.45f, 0.0f);
     glScalef(1.15f, 0.06f, 1.15f);
@@ -140,7 +196,7 @@ void drawTorso() {
     drawVestEdges();
 
     // vest skirt flap (shorter)
-    setMaterial(0.55f, 0.20f, 0.12f);
+    matVest();
     glPushMatrix();
     glTranslatef(0.0f, -0.72f, 0.0f);
     glScalef(1.28f, 0.26f, 0.64f);
@@ -148,64 +204,64 @@ void drawTorso() {
     glPopMatrix();
 }
 
+// ---------- Head Unit ----------
 void drawHeadUnit() {
     // neck (short)
-    setMaterial(1.0f, 0.85f, 0.75f);
-    glPushMatrix(); glTranslatef(0.0f, 0.02f, 0.0f); glRotatef(-90, 1, 0, 0); drawCappedCylinder(0.22f, 0.24f, 24); glPopMatrix();
+    matSkin();
+    glPushMatrix();
+    glTranslatef(0.0f, 0.02f, 0.0f);
+    glRotatef(-90, 1, 0, 0);
+    drawCappedCylinder(0.22f, 0.24f, 24);
+    glPopMatrix();
 
     // scarf ring
-    setMaterial(0.8f, 0.1f, 0.1f);
-    glPushMatrix(); glTranslatef(0.0f, 0.25f, 0.0f); glRotatef(90, 1, 0, 0); glutSolidTorus(0.08f, 0.5f, 20, 40); glPopMatrix();
+    matScarf();
+    glPushMatrix();
+    glTranslatef(0.0f, 0.25f, 0.0f);
+    glRotatef(90, 1, 0, 0);
+    glutSolidTorus(0.08f, 0.5f, 20, 40);
+    glPopMatrix();
 
     // head (slightly squashed)
-    setMaterial(1.0f, 0.87f, 0.77f);
+    matSkin();
     glPushMatrix();
     glTranslatef(0.0f, 0.78f, 0.0f);
     glScalef(1.0f, 0.92f, 1.0f);
-    drawSphere(MS.headR, 36, 24);
+    drawSpherePrim(MS.headR, 36, 24);
     glPopMatrix();
 
-    // ---- HAIR CAP (taller + larger so it covers the skull apex) ----
-    //   previous version's Y scale put the hair *below* the head apex -> "bald spot".
-    //   These numbers guarantee hair_apex_y > head_apex_y.
-    auto setMaterialHair = [](float r, float g, float b, float shininess = 8.0f) {
-        const GLfloat diff[] = { r, g, b, 1.0f };
-        const GLfloat amb[] = { r * 0.25f, g * 0.25f, b * 0.25f, 1.0f };
-        const GLfloat spec[] = { 0.15f, 0.15f, 0.15f, 1.0f };
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diff);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec);
-        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
-        };
+    // hair cap — taller & larger to fully cover skull
+    const float hairLift = 0.84f;
+    const float hairR = MS.headR + 0.05f;
+    const float hairScaleY = 0.90f;
 
-    const float hairLift = 0.84f;               // higher center
-    const float hairR = MS.headR + 0.05f;    // larger radius
-    const float hairScaleY = 0.90f;               // taller than before
-
-    setMaterialHair(0.08f, 0.08f, 0.08f);
+    matHair();
     glPushMatrix();
     glTranslatef(0.0f, hairLift, 0.0f);
     glScalef(1.08f, hairScaleY, 1.08f);
-    drawSphere(hairR, 36, 24);
+    drawSpherePrim(hairR, 36, 24);
     glPopMatrix();
 
-    // thin, dark rim to make the boundary obvious
-    setMaterialHair(0.06f, 0.06f, 0.06f);
-    glPushMatrix(); glTranslatef(0.0f, 0.64f, 0.0f); glRotatef(90, 1, 0, 0);
+    // thin hairline rim
+    matHairRim();
+    glPushMatrix();
+    glTranslatef(0.0f, 0.64f, 0.0f);
+    glRotatef(90, 1, 0, 0);
     glutSolidTorus(0.01f, MS.headR * 0.94f, 16, 48);
     glPopMatrix();
 
     // hair buns
-    setMaterialHair(0.08f, 0.08f, 0.08f);
-    glPushMatrix(); glTranslatef(-0.66f, 1.06f, -0.02f); drawSphere(0.24f); glPopMatrix();
-    glPushMatrix(); glTranslatef(0.66f, 1.06f, -0.02f); drawSphere(0.24f); glPopMatrix();
+    matHair();
+    glPushMatrix(); glTranslatef(-0.66f, 1.06f, -0.02f); drawSpherePrim(0.24f); glPopMatrix();
+    glPushMatrix(); glTranslatef(0.66f, 1.06f, -0.02f); drawSpherePrim(0.24f); glPopMatrix();
 
     // ears
-    setMaterial(1.0f, 0.87f, 0.77f);
-    glPushMatrix(); glTranslatef(-0.83f, 0.60f, 0.00f); drawSphere(0.18f, 24, 16); glPopMatrix();
-    glPushMatrix(); glTranslatef(0.83f, 0.60f, 0.00f); drawSphere(0.18f, 24, 16); glPopMatrix();
+    matSkin();
+    glPushMatrix(); glTranslatef(-0.83f, 0.60f, 0.00f); drawSpherePrim(0.18f, 24, 16); glPopMatrix();
+    glPushMatrix(); glTranslatef(0.83f, 0.60f, 0.00f); drawSpherePrim(0.18f, 24, 16); glPopMatrix();
 }
 
+// ---------- Arm Chain ----------
 void drawArmChain(bool left) {
     float side = left ? -1.f : 1.f;
 
@@ -213,8 +269,8 @@ void drawArmChain(bool left) {
     glTranslatef(side * MS.shoulderX, MS.shoulderY, -0.08f);
 
     // shoulder joint (skin only, no sleeve ring)
-    setMaterial(1.0f, 0.85f, 0.75f);
-    drawSphere(0.23f);
+    matSkin();
+    drawSpherePrim(0.23f);
 
     // upper arm
     glTranslatef(0.0f, -MS.upperArmH * 0.5f, 0.0f);
@@ -225,7 +281,7 @@ void drawArmChain(bool left) {
 
     // elbow
     glTranslatef(0.0f, -MS.upperArmH * 0.5f, 0.0f);
-    drawSphere(MS.jointR);
+    drawSpherePrim(MS.jointR);
 
     // forearm
     glTranslatef(0.0f, -MS.lowerArmH * 0.5f, 0.0f);
@@ -236,17 +292,17 @@ void drawArmChain(bool left) {
 
     // wrist + hand (round fist)
     glTranslatef(0.0f, -MS.lowerArmH * 0.5f, 0.0f);
-    drawSphere(MS.jointR * 0.90f);
-    setMaterial(1.0f, 0.85f, 0.75f);
+    drawSpherePrim(MS.jointR * 0.90f);
+    matSkin();
     glPushMatrix();
     glScalef(1.05f, 0.90f, 1.05f);
-    drawSphere(0.25f, 28, 18);
+    drawSpherePrim(0.25f, 28, 18);
     glPopMatrix();
 }
 
-
+// ---------- Shorts ----------
 void drawShorts() {
-    setMaterial(0.35f, 0.15f, 0.08f);
+    setMaterial(Palette::VEST[0] * 0.64f, Palette::VEST[1] * 0.75f, Palette::VEST[2] * 0.66f); // darker cloth
     // left sleeve
     glPushMatrix();
     glTranslatef(-MS.hipX, -MS.shortSleeveDrop, 0.0f);
@@ -266,17 +322,21 @@ void drawShorts() {
     gluDeleteQuadric(q2);
     glPopMatrix();
     // front cloth
-    glPushMatrix(); glTranslatef(0.0f, -0.88f, 0.25f); glScalef(0.9f, 0.30f, 0.06f); glutSolidCube(1.0f); glPopMatrix();
+    glPushMatrix();
+    glTranslatef(0.0f, -0.88f, 0.25f);
+    glScalef(0.9f, 0.30f, 0.06f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
 }
 
+// ---------- Leg ----------
 static void drawBoot(float sideX, float yBottom, float zOffset) {
-    // rounded boot (sphere heel + capsule toe)
+    matBoot();
     // heel
-    setMaterial(0.15f, 0.15f, 0.15f);
     glPushMatrix();
     glTranslatef(sideX, yBottom + 0.10f, zOffset - 0.02f);
     glScalef(0.42f, 0.22f, 0.46f);
-    drawSphere(0.55f, 28, 20);
+    drawSpherePrim(0.55f, 28, 20);
     glPopMatrix();
     // toe
     glPushMatrix();
@@ -288,7 +348,7 @@ static void drawBoot(float sideX, float yBottom, float zOffset) {
 
 void drawLeg(bool left) {
     float side = left ? -1.f : 1.f;
-    setMaterial(1.0f, 0.85f, 0.75f);
+    matSkin();
 
     // upper leg (short)
     glPushMatrix();
@@ -298,7 +358,10 @@ void drawLeg(bool left) {
     glPopMatrix();
 
     // knee
-    glPushMatrix(); glTranslatef(side * MS.hipX, -0.98f - MS.upperLegH, 0.0f); drawSphere(0.17f); glPopMatrix();
+    glPushMatrix();
+    glTranslatef(side * MS.hipX, -0.98f - MS.upperLegH, 0.0f);
+    drawSpherePrim(0.17f);
+    glPopMatrix();
 
     // lower leg
     glPushMatrix();
@@ -311,8 +374,9 @@ void drawLeg(bool left) {
     drawBoot(side * MS.hipX, -0.98f - MS.upperLegH - MS.lowerLegH - 0.12f, 0.10f);
 }
 
+// ---------- Braided Belt ----------
 void drawBraidedBelt() {
-    setMaterial(0.90f, 0.70f, 0.15f); // yellow rope
+    matRope();
     const int   N = 18;
     const float R = 0.62f;     // belt radius around torso
     const float y = -0.25f;    // belt height (y)
@@ -333,7 +397,9 @@ void drawBraidedBelt() {
     glPushMatrix(); glTranslatef(-0.10f, y - 0.30f, 0.55f); glRotatef(70, 1, 0, 0); glutSolidTorus(0.04f, 0.10f, 10, 14); glPopMatrix();
 }
 
-// ---------- Character assembly ----------
+// ============================================================
+// 6) CHARACTER ASSEMBLY (compose parts)
+// ============================================================
 void drawCharacter() {
     glPushMatrix();
     drawTorso();
@@ -349,25 +415,27 @@ void drawCharacter() {
     glPushMatrix(); drawLeg(false); glPopMatrix();
 }
 
-// ---------- GLUT callbacks ----------
+// ============================================================
+// 7) GLUT CALLBACKS & OPENGL SETUP
+// ============================================================
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    // camera
-    double cx = camDist * cos(camPitch * M_PI / 180.0) * sin(camYaw * M_PI / 180.0);
-    double cy = camDist * sin(camPitch * M_PI / 180.0);
-    double cz = camDist * cos(camPitch * M_PI / 180.0) * cos(camYaw * M_PI / 180.0);
+    // Camera
+    const double cx = camDist * cos(camPitch * M_PI / 180.0) * sin(camYaw * M_PI / 180.0);
+    const double cy = camDist * sin(camPitch * M_PI / 180.0);
+    const double cz = camDist * cos(camPitch * M_PI / 180.0) * cos(camYaw * M_PI / 180.0);
     gluLookAt(cx, cy, cz, 0, 0.5f, 0, 0, 1, 0);
 
-    // light each frame (after camera)
+    // Light each frame (after camera)
     GLfloat lightPos[] = { 3.5f, 5.5f, 3.0f, 1.0f };
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
 
-    // Ground plane (lower it a bit)
-    setMaterial(0.1f, 0.12f, 0.14f);
+    // Ground plane
+    matGround();
     glPushMatrix();
     glTranslatef(0, -1.50f, 0);
     glScalef(8, 0.05f, 8);
@@ -413,12 +481,12 @@ int main(int argc, char** argv) {
     glEnable(GL_NORMALIZE);
     glEnable(GL_CULL_FACE); glCullFace(GL_BACK);
     glShadeModel(GL_SMOOTH);
-    glClearColor(0.05f, 0.06f, 0.08f, 1.0f);
+    glClearColor(Palette::CLEAR[0], Palette::CLEAR[1], Palette::CLEAR[2], Palette::CLEAR[3]);
 
-    // light properties
-    const GLfloat ambient[] = { 0.28f,0.28f,0.28f,1 };
-    const GLfloat diffuse[] = { 0.95f,0.95f,0.95f,1 };
-    const GLfloat specular[] = { 0.6f,0.6f,0.6f,1 };
+    // Light properties
+    const GLfloat ambient[] = { 0.28f, 0.28f, 0.28f, 1.0f };
+    const GLfloat diffuse[] = { 0.95f, 0.95f, 0.95f, 1.0f };
+    const GLfloat specular[] = { 0.60f, 0.60f, 0.60f, 1.0f };
     glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
     glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
