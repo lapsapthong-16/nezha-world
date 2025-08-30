@@ -24,6 +24,7 @@
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
+#define SHOW_HEAD 0 
 #endif
 
 // ============================================================
@@ -49,7 +50,7 @@ namespace Palette {
     constexpr float ROPE[3] = { 0.90f, 0.70f, 0.15f };
     constexpr float SCARF[3] = { 0.80f, 0.10f, 0.10f };
     constexpr float GROUND[3] = { 0.10f, 0.12f, 0.14f };
-    constexpr float CLEAR[4] = { 0.05f, 0.06f, 0.08f, 1.0f };
+    constexpr float CLEAR[4] = { 0.85f, 0.85f, 0.88f, 1.0f };
 }
 
 // Generic material (diffuse/spec set; quick to call)
@@ -89,6 +90,29 @@ inline void matGround() { setMaterial(Palette::GROUND[0], Palette::GROUND[1], Pa
 // ============================================================
 // 3) PRIMITIVE HELPERS
 // ============================================================
+inline float deg2rad(float d) { return d * (float)M_PI / 180.0f; }
+
+// Curved vest wall: a tapered open cylinder whose axis is Y (up)
+inline void drawOpenCylinderY(float rBot, float rTop, float h,
+    float startDeg, float sweepDeg, int slices = 64) {
+    const float y0 = -h * 0.5f;
+    const float y1 = h * 0.5f;
+
+    glBegin(GL_QUAD_STRIP);
+    for (int i = 0; i <= slices; ++i) {
+        float t = startDeg + sweepDeg * (float)i / (float)slices;
+        float a = deg2rad(t);
+        float c = cosf(a), s = sinf(a);
+
+        // radial normal works well for small taper
+        glNormal3f(c, 0.0f, s);
+
+        glVertex3f(rBot * c, y0, rBot * s);   // bottom ring
+        glVertex3f(rTop * c, y1, rTop * s);   // top ring
+    }
+    glEnd();
+}
+
 inline void drawSpherePrim(float radius, int slices = 24, int stacks = 18) {
     GLUquadric* q = gluNewQuadric();
     gluQuadricNormals(q, GLU_SMOOTH);
@@ -188,40 +212,116 @@ void drawInnerTorsoShell() {
     gluDeleteQuadric(q);
     glPopMatrix();
 }
-void drawTorso() {
-    // vest (slight taper cylinder, capped)
-    matVest();
+
+// Gray undershirt (curved) + simple red emblem
+static void drawShirtFrontWithEmblem() {
+    // Curved shirt plate (thin capped cylinder), tucked slightly inside
+    matShirt();
     glPushMatrix();
-    glRotatef(-90, 1, 0, 0);
+    glTranslatef(0.0f, 0.00f, 0.26f);  // sits behind the vest panels
+    glRotatef(90, 1, 0, 0);
+    const float R = 0.43f, TH = 0.04f;
     GLUquadric* q = gluNewQuadric();
     gluQuadricNormals(q, GLU_SMOOTH);
-    gluCylinder(q, MS.torsoBotR, MS.torsoTopR, MS.torsoH, 44, 1);
-    gluDisk(q, 0.0, MS.torsoBotR, 44, 1);                      // bottom cap
-    glPushMatrix(); glTranslatef(0, 0, MS.torsoH);
-    gluDisk(q, 0.0, MS.torsoTopR, 44, 1);                  // top cap
-    glPopMatrix();
+    gluCylinder(q, R, R, TH, 40, 1);
+    gluDisk(q, 0.0, R, 40, 1);
+    glPushMatrix(); glTranslatef(0, 0, TH); gluDisk(q, 0.0, R, 40, 1); glPopMatrix();
     gluDeleteQuadric(q);
     glPopMatrix();
 
-    // chest plate (flat panel like ref)
-    matShirt();
+    // Emblem: simple red disk
+    setMaterial(0.80f, 0.10f, 0.10f);
     glPushMatrix();
-    glTranslatef(0.0f, 0.06f, 0.30f);
-    glScalef(0.95f, 0.95f, 0.18f);
-    glutSolidCube(1.0f);
+    glTranslatef(0.0f, 0.07f, 0.33f);
+    glRotatef(-90, 1, 0, 0);
+    GLUquadric* q2 = gluNewQuadric();
+    gluQuadricNormals(q2, GLU_SMOOTH);
+    gluDisk(q2, 0.0f, 0.14f, 36, 1);
+    gluDeleteQuadric(q2);
     glPopMatrix();
+}
 
-    // narrow shoulder yoke
+// Left/Right vest panels with outward tilt and gold trim
+static void drawVestPanel(bool left) {
+    const float side = left ? -1.f : 1.f;
+
+    // panel body
     matVest();
     glPushMatrix();
-    glTranslatef(0.0f, MS.torsoH * 0.45f, 0.0f);
-    glScalef(1.15f, 0.06f, 1.15f);
+    glTranslatef(side * 0.34f, 0.00f, 0.325f);  // move to front
+    glRotatef(side * 8.0f, 0, 1, 0);            // open outward a bit
+    glScalef(0.35f, MS.torsoH * 0.80f, 0.06f);  // thin slab
     glutSolidCube(1.0f);
     glPopMatrix();
 
-    drawVestEdges();
+    // gold trim along outer edge
+    matRope();
+    glPushMatrix();
+    glTranslatef(side * 0.50f, 0.00f, 0.325f);
+    glRotatef(side * 8.0f, 0, 1, 0);
+    glScalef(0.04f, MS.torsoH * 0.86f, 0.065f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
 
-    // vest skirt flap (shorter)
+    // gold trim along inner edge (near the center opening)
+    matRope();
+    glPushMatrix();
+    glTranslatef(side * 0.19f, 0.00f, 0.325f);
+    glRotatef(side * 8.0f, 0, 1, 0);
+    glScalef(0.03f, MS.torsoH * 0.78f, 0.065f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+}
+// Gold ring around the armhole so the arm looks "sewn" into the vest.
+static void drawArmholeTrim(float x, float y, float z, float ringR, float tubeR) {
+    matRope(); // gold
+    glPushMatrix();
+    glTranslatef(x, y, z);
+    glRotatef(90, 0, 1, 0);           // ring faces outward (X axis)
+    glutSolidTorus(tubeR, ringR, 16, 36);
+    glPopMatrix();
+}
+// --- thin annulus that closes the vest at the shoulders (no hole through body)
+static void drawVestTopYoke() {
+    matVest();
+    const float yTop = MS.torsoH * 0.5f;          // top of the vest shell (drawOpenCylinderY uses Y up)
+    const float rOuter = MS.torsoTopR + 0.001f;   // flush with vest top radius
+    const float rInner = 0.34f;                   // neck opening (adjust when you add the head back)
+
+    glPushMatrix();
+    glTranslatef(0.0f, yTop, 0.0f);
+    glRotatef(-90, 1, 0, 0);                      // make GLU disk lie in XZ plane
+    GLUquadric* q = gluNewQuadric();
+    gluQuadricNormals(q, GLU_SMOOTH);
+    gluDisk(q, rInner, rOuter, 64, 1);            // annulus => sealed shoulders
+    gluDeleteQuadric(q);
+    glPopMatrix();
+}
+void drawTorso() {
+    // ---- Open vest shell (back + sides) ----
+    // front opening centred on +Z
+    constexpr float VEST_GAP_DEG = 100.0f;
+    const float gapDeg = VEST_GAP_DEG;
+    const float edgeL = 90.0f + gapDeg * 0.5f;   // left rim angle
+    const float startDeg = edgeL;                   // start here...
+    const float sweepDeg = 360.0f - gapDeg;         // ...sweep around the back to the right rim
+
+    matVest();
+    glPushMatrix();
+    drawOpenCylinderY(MS.torsoBotR, MS.torsoTopR, MS.torsoH, startDeg, sweepDeg, 72);
+    glPopMatrix();
+
+    // ---- NEW: close the top so you can't see inside ----
+    drawVestTopYoke();
+
+    // ---- Shirt + emblem (sits slightly inside the opening) ----
+    drawShirtFrontWithEmblem();
+
+    // ---- Front vest panels with gold trim (matches the ref look) ----
+    drawVestPanel(true);
+    drawVestPanel(false);
+
+    // ---- Waist flap (unchanged) ----
     matVest();
     glPushMatrix();
     glTranslatef(0.0f, -0.72f, 0.0f);
@@ -229,7 +329,7 @@ void drawTorso() {
     glutSolidCube(1.0f);
     glPopMatrix();
 }
-// solid wrap under the vest so the belt area is never see-through
+
 void drawHipWrap() {
     GLboolean wasCull = glIsEnabled(GL_CULL_FACE);
     if (wasCull) glDisable(GL_CULL_FACE);
@@ -446,36 +546,90 @@ void drawLeg(bool left) {
 
 // ---------- Braided Belt ----------
 void drawBraidedBelt() {
+    // Make sure rope never disappears at glancing angles
+    GLboolean wasCull = glIsEnabled(GL_CULL_FACE);
+    if (wasCull) glDisable(GL_CULL_FACE);
+
     matRope();
-    const int   N = 18;
-    const float R = 0.62f;     // belt radius around torso
-    const float y = -0.25f;    // belt height (y)
-    for (int i = 0; i < N; i++) {
+
+    // ===== main rope ring =====
+    const int   N = 22;
+    const float y = -0.245f;              // belt height
+    const float R = 0.60f;                // distance from center
+    const float tube = 0.06f;             // rope thickness (bigger than before)
+
+    for (int i = 0; i < N; ++i) {
         float t = (float)i / N * 2.0f * (float)M_PI;
         float x = R * cosf(t);
         float z = R * sinf(t);
         glPushMatrix();
         glTranslatef(x, y, z);
-        glRotatef(-t * 180.0f / (float)M_PI, 0, 1, 0);
+        glRotatef(t * 180.0f / (float)M_PI, 0, 1, 0); // twist a little as it goes
         glRotatef(90, 1, 0, 0);
-        glutSolidTorus(0.04f, 0.10f, 10, 14);
+        glutSolidTorus(tube * 0.35f, tube, 12, 24);
         glPopMatrix();
     }
 
-    // two hanging ropes
-    glPushMatrix(); glTranslatef(0.10f, y - 0.05f, 0.55f); glRotatef(90, 1, 0, 0); glutSolidTorus(0.04f, 0.10f, 10, 14); glPopMatrix();
-    glPushMatrix(); glTranslatef(-0.10f, y - 0.30f, 0.55f); glRotatef(70, 1, 0, 0); glutSolidTorus(0.04f, 0.10f, 10, 14); glPopMatrix();
+    // ===== front knot (thicker, sits at +Z) =====
+    const float kz = 0.54f;
+    const float kx = 0.00f;
+    const float ky = y + 0.01f;
+
+    // two interlocked thick rings to fake a knot
+    glPushMatrix();
+    glTranslatef(kx, ky, kz);
+    glRotatef(90, 1, 0, 0);
+    glutSolidTorus(tube * 0.42f, tube * 1.05f, 14, 28);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(kx + 0.10f, ky, kz - 0.06f);
+    glRotatef(35, 0, 1, 0);
+    glRotatef(90, 1, 0, 0);
+    glutSolidTorus(tube * 0.38f, tube * 0.95f, 14, 28);
+    glPopMatrix();
+
+    // small bulge in the middle of the knot
+    glPushMatrix();
+    glTranslatef(kx + 0.04f, ky + 0.01f, kz - 0.01f);
+    glutSolidSphere(tube * 0.80f, 18, 14);
+    glPopMatrix();
+
+    // ===== rope ends (short tails) =====
+    auto ropeEnd = [&](float sx, float sy, float sz, float yawDeg, float pitchDeg) {
+        glPushMatrix();
+        glTranslatef(sx, sy, sz);
+        glRotatef(yawDeg, 0, 1, 0);
+        glRotatef(pitchDeg, 1, 0, 0);
+        // tapered cylinder: thicker near knot, thinner at tip
+        GLUquadric* q = gluNewQuadric();
+        gluQuadricNormals(q, GLU_SMOOTH);
+        const float h = 0.34f;
+        gluCylinder(q, tube * 0.70f, tube * 0.40f, h, 18, 1);
+        // little cap at the end
+        glPushMatrix(); glTranslatef(0, 0, h); glutSolidSphere(tube * 0.40f, 14, 10); glPopMatrix();
+        gluDeleteQuadric(q);
+        glPopMatrix();
+        };
+    ropeEnd(kx - 0.06f, ky - 0.01f, kz + 0.02f, -10.0f, 75.0f); // left end
+    ropeEnd(kx + 0.12f, ky - 0.01f, kz - 0.01f, 15.0f, 75.0f); // right end
+
+    if (wasCull) glEnable(GL_CULL_FACE);
 }
+
 
 // ============================================================
 // 6) CHARACTER ASSEMBLY (compose parts)
 // ============================================================
 void drawCharacter() {
     glPushMatrix();
-    drawInnerTorsoShell();                             // undershirt
-    drawTorso();
-    drawHipWrap();                                     // << new: seals waist
-    glPushMatrix(); glTranslatef(0.0f, MS.headLift, 0.0f); drawHeadUnit(); glPopMatrix();
+    drawTorso();               // vest + shirt front
+    drawHipWrap();
+#if SHOW_HEAD
+    glPushMatrix();
+    glTranslatef(0.0f, MS.headLift, 0.0f);
+    drawHeadUnit();
+    glPopMatrix();
+#endif
     drawBraidedBelt();
     glPopMatrix();
 
@@ -570,3 +724,4 @@ int main(int argc, char** argv) {
     glutMainLoop();
     return 0;
 }
+
