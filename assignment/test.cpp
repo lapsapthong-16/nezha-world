@@ -161,7 +161,33 @@ void drawVestEdges() {
     glutSolidCube(1.0f);
     glPopMatrix();
 }
+void drawInnerTorsoShell() {
+    matShirt();
 
+    glPushMatrix();
+    // Align cylinder vertically
+    glRotatef(-90, 1, 0, 0);
+    const float down = 0.55f;                 // how much to extend downward
+    glTranslatef(0, 0, -down);
+
+    // Height chosen so top <= torsoH - 0.02 (never peeks above the vest)
+    const float hTopSafe = MS.torsoH - 0.02f; // top inside the vest
+    const float h = hTopSafe + down;   // total height from the shifted base
+
+    // Slimmer than vest so it stays inside everywhere
+    const float rTop = MS.torsoTopR * 0.88f;
+    const float rBot = MS.torsoBotR * 0.88f;
+
+    GLUquadric* q = gluNewQuadric();
+    gluQuadricNormals(q, GLU_SMOOTH);
+    gluCylinder(q, rBot, rTop, h, 36, 1);
+    gluDisk(q, 0.0f, rBot, 36, 1);                 // bottom cap (deep inside body)
+    glPushMatrix(); glTranslatef(0, 0, h);
+    gluDisk(q, 0.0f, rTop, 36, 1);             // top cap (hidden under vest)
+    glPopMatrix();
+    gluDeleteQuadric(q);
+    glPopMatrix();
+}
 void drawTorso() {
     // vest (slight taper cylinder, capped)
     matVest();
@@ -203,7 +229,32 @@ void drawTorso() {
     glutSolidCube(1.0f);
     glPopMatrix();
 }
+// solid wrap under the vest so the belt area is never see-through
+void drawHipWrap() {
+    GLboolean wasCull = glIsEnabled(GL_CULL_FACE);
+    if (wasCull) glDisable(GL_CULL_FACE);
 
+    matVest();
+    glPushMatrix();
+    // Move it up so it tucks *under* the vest hem
+    glTranslatef(0.0f, -0.82f, 0.0f);
+    glRotatef(-90, 1, 0, 0);
+
+    const float h = 0.48f;                     // taller wrap seals the waist
+    const float r = MS.torsoBotR * 0.99f;      // closely matches vest bottom
+
+    GLUquadric* q = gluNewQuadric();
+    gluQuadricNormals(q, GLU_SMOOTH);
+    gluCylinder(q, r, r, h, 44, 1);            // wall
+    gluDisk(q, 0.0f, r, 44, 1);                // top cap (blocks view upward)
+    glPushMatrix(); glTranslatef(0, 0, h);
+    gluDisk(q, 0.0f, r, 44, 1);            // bottom cap
+    glPopMatrix();
+    gluDeleteQuadric(q);
+    glPopMatrix();
+
+    if (wasCull) glEnable(GL_CULL_FACE);
+}
 // ---------- Head Unit ----------
 void drawHeadUnit() {
     // neck (short)
@@ -327,6 +378,25 @@ void drawShorts() {
     glScalef(0.9f, 0.30f, 0.06f);
     glutSolidCube(1.0f);
     glPopMatrix();
+    // back cloth (covers lower back)
+    glPushMatrix();
+    glTranslatef(0.0f, -0.90f, -0.22f);
+    glScalef(0.95f, 0.32f, 0.06f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+
+    // side flaps (left & right) to close remaining gaps
+    glPushMatrix();
+    glTranslatef(-MS.hipX - 0.08f, -0.90f, 0.0f);
+    glScalef(0.06f, 0.30f, 0.35f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(MS.hipX + 0.08f, -0.90f, 0.0f);
+    glScalef(0.06f, 0.30f, 0.35f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+
 }
 
 // ---------- Leg ----------
@@ -402,7 +472,9 @@ void drawBraidedBelt() {
 // ============================================================
 void drawCharacter() {
     glPushMatrix();
+    drawInnerTorsoShell();                             // undershirt
     drawTorso();
+    drawHipWrap();                                     // << new: seals waist
     glPushMatrix(); glTranslatef(0.0f, MS.headLift, 0.0f); drawHeadUnit(); glPopMatrix();
     drawBraidedBelt();
     glPopMatrix();
