@@ -123,8 +123,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="assignment.cpp" />
+    <ClCompile Include="arms.cpp" />
+    <ClCompile Include="belt.cpp" />
+    <ClCompile Include="head.cpp" />
+    <ClCompile Include="legs.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="model.cpp" />
+    <ClCompile Include="shorts.cpp" />
     <ClCompile Include="test.cpp" />
+    <ClCompile Include="torso.cpp" />
+    <ClCompile Include="utils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="arms.hpp" />
+    <ClInclude Include="belt.hpp" />
+    <ClInclude Include="head.hpp" />
+    <ClInclude Include="legs.hpp" />
+    <ClInclude Include="model.hpp" />
+    <ClInclude Include="shorts.hpp" />
+    <ClInclude Include="torso.hpp" />
+    <ClInclude Include="utils.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

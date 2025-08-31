@@ -13,13 +13,66 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\BodyParts">
+      <UniqueIdentifier>{8f00001b-3d77-4da0-9356-c96408f3ad84}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="assignment.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="torso.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
+    <ClCompile Include="head.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
+    <ClCompile Include="arms.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
+    <ClCompile Include="model.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
+    <ClCompile Include="belt.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
+    <ClCompile Include="legs.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
+    <ClCompile Include="shorts.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="torso.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="model.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="head.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="arms.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="legs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="belt.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shorts.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
