@@ -39,8 +39,16 @@ void display() {
     const double cz = camDist * std::cos(deg2rad(camPitch)) * std::cos(deg2rad(camYaw));
     gluLookAt(cx, cy, cz, 0, 0.5f, 0, 0, 1, 0);
 
+    // Main light
     GLfloat lightPos[] = { 3.5f, 5.5f, 3.0f, 1.0f };
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+    
+    // Additional lights for even illumination
+    GLfloat lightPos2[] = { -3.5f, 3.0f, -3.0f, 1.0f };  // Opposite side
+    glLightfv(GL_LIGHT1, GL_POSITION, lightPos2);
+    
+    GLfloat lightPos3[] = { 0.0f, -2.0f, 4.0f, 1.0f };   // From below/front
+    glLightfv(GL_LIGHT2, GL_POSITION, lightPos3);
 
     matGround();
     glPushMatrix(); glTranslatef(0, -1.50f, 0); glScalef(8, 0.05f, 8); glutSolidCube(1.0f); glPopMatrix();
@@ -85,12 +93,30 @@ int main(int argc, char** argv) {
     glShadeModel(GL_SMOOTH);
     glClearColor(Palette::CLEAR[0], Palette::CLEAR[1], Palette::CLEAR[2], Palette::CLEAR[3]);
 
-    const GLfloat ambient[] = { 0.28f, 0.28f, 0.28f, 1.0f };
+    // SOLUTION 1: Increase ambient lighting significantly
+    const GLfloat ambient[] = { 0.85f, 0.85f, 0.85f, 1.0f };  // Much brighter ambient
     const GLfloat diffuse[] = { 0.95f, 0.95f, 0.95f, 1.0f };
     const GLfloat specular[] = { 0.60f, 0.60f, 0.60f, 1.0f };
     glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
     glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+
+    // SOLUTION 2: Add additional lights for even better coverage
+    // Enable more lights
+    glEnable(GL_LIGHT1);
+    glEnable(GL_LIGHT2);
+    
+    // Light from opposite side
+    const GLfloat ambient2[] = { 0.3f, 0.3f, 0.3f, 1.0f };
+    const GLfloat diffuse2[] = { 0.7f, 0.7f, 0.7f, 1.0f };
+    glLightfv(GL_LIGHT1, GL_AMBIENT, ambient2);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse2);
+    
+    // Light from below/side
+    const GLfloat ambient3[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+    const GLfloat diffuse3[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+    glLightfv(GL_LIGHT2, GL_AMBIENT, ambient3);
+    glLightfv(GL_LIGHT2, GL_DIFFUSE, diffuse3);
 
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);

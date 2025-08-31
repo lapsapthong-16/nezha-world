@@ -9,8 +9,8 @@ static void drawTorsoCore(bool asSkin = true) {
     if (asSkin) matSkin(); else matShirt();
 
     // Slightly slimmer than the vest so it never pokes through
-    const float rBot = MS.torsoBotR * 0.88f;
-    const float rTop = MS.torsoTopR * 0.86f;
+    const float rBot = MS.torsoBotR * 0.84f;
+    const float rTop = MS.torsoTopR * 0.78f;
 
     // Height tucks under the yoke and down into the waist a touch
     const float h = MS.torsoH - 0.02f;
@@ -42,7 +42,7 @@ static void drawVestTopYoke() {
     matVest();
     const float yTop = MS.torsoH * 0.5f;
     const float rOuter = MS.torsoTopR + 0.001f;
-    const float rInner = 0.34f; // neck hole placeholder
+    const float rInner = 0.42f; // neck hole placeholder
 
     glPushMatrix();
     glTranslatef(0.0f, yTop, 0.0f);
@@ -68,6 +68,30 @@ static void drawEdgePipeAt(float deg) {
     drawCappedCylinder(0.018f, MS.torsoH * 0.78f, 28);
     glPopMatrix();
 }
+// two thin front panels (like flaps), slightly flared
+static void drawFrontPanels()
+{
+    const float panelY = 0.0f;
+    const float panelZ = 0.26f;  // forward from center
+    const float flare = 10.0f;  // degrees
+
+    // LEFT panel
+    matVest();
+    glPushMatrix();
+    glTranslatef(-0.28f, panelY, panelZ);
+    glRotatef(flare, 0, 1, 0);                // flare outward
+    glScalef(0.30f, MS.torsoH * 0.78f, 0.05f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+
+    // RIGHT panel
+    glPushMatrix();
+    glTranslatef(0.28f, panelY, panelZ);
+    glRotatef(-flare, 0, 1, 0);
+    glScalef(0.30f, MS.torsoH * 0.78f, 0.05f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+}
 
 // ---------------- public ----------------
 void drawTorso() {
@@ -85,6 +109,7 @@ void drawTorso() {
 
     // Solid inner body so it’s not see-through
     drawTorsoCore(/*asSkin=*/true);            // swap to false to make it a gray shirt
+    drawFrontPanels();
 
     // Close the top so you can’t see down inside
     drawVestTopYoke();
