@@ -156,7 +156,34 @@ static void drawSidePanels() {
     glutSolidCube(1.0f);
     glPopMatrix();
 }
+// --- fills the underside of the vest so you can't see the white interior ---
+static void drawWaistSeal()
+{
+    // A very short capped cylinder that sits just inside the vest hem
+    GLboolean wasCull = glIsEnabled(GL_CULL_FACE);
+    if (wasCull) glDisable(GL_CULL_FACE);
 
+    matVest();                                  // same color as the vest
+    glPushMatrix();
+    glTranslatef(0.0f, -0.690f, 0.0f);          // just under the vest’s bottom
+    glRotatef(-90, 1, 0, 0);
+
+    const float rTop = MS.torsoBotR * 0.915f;   // slightly inside the shell
+    const float rBot = MS.torsoBotR * 0.920f;   // tiny taper looks nicer
+    const float h = 0.16f;                   // short, enough to block views
+
+    GLUquadric* q = gluNewQuadric();
+    gluQuadricNormals(q, GLU_SMOOTH);
+    gluCylinder(q, rBot, rTop, h, 44, 1);       // wall
+    gluDisk(q, 0.0f, rBot, 44, 1);              // bottom cap
+    glPushMatrix(); glTranslatef(0, 0, h);
+    gluDisk(q, 0.0f, rTop, 44, 1);              // top cap
+    glPopMatrix();
+    gluDeleteQuadric(q);
+
+    glPopMatrix();
+    if (wasCull) glEnable(GL_CULL_FACE);
+}
 // ---------------- public ----------------
 void drawTorso() {
     // Opening width and a tiny yaw so the shell isn’t perfectly straight-on
@@ -183,6 +210,8 @@ void drawTorso() {
 
     // --- Close the top (yoke) ---
     drawVestTopYoke();
+
+    drawWaistSeal();
 
     // --- Side panels: thinner/closer so they don’t protrude at the front ---
     matVest();
