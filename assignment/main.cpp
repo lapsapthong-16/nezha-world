@@ -13,6 +13,10 @@ double camDist = 8.0, camYaw = 25.0, camPitch = 15.0;
 #define SHOW_HEAD 0
 
 static void drawCharacter() {
+    // Move entire character up to prevent feet from going under platform
+    glPushMatrix();
+    glTranslatef(0.0f, 0.4f, 0.0f);  // Lift character up by 0.4 units
+    
     glPushMatrix();
     drawTorso();
     drawHipWrap();
@@ -28,6 +32,8 @@ static void drawCharacter() {
     drawShorts();
     glPushMatrix(); drawLeg(true);  glPopMatrix();
     glPushMatrix(); drawLeg(false); glPopMatrix();
+    
+    glPopMatrix();  // End character lift
 }
 
 void display() {

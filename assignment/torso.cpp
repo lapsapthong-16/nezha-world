@@ -4,6 +4,56 @@
 #include <GL/freeglut.h>
 
 // ---------------- helpers ----------------
+static void drawGoldEdgeAtDeg(float deg)
+{
+    // follows the tapered vest rim exactly
+    const float a = deg2rad(deg);
+    const float cs = cosf(a), sn = sinf(a);
+
+    // match the vest taper you use for drawOpenCylinderY(...)
+    const float rBot = MS.torsoBotR * 0.95f;
+    const float rTop = MS.torsoTopR * 0.92f;
+
+    // push slightly outward so it never z-fights the vest shell
+    const float eps = 0.010f;
+
+    // visual thickness across the opening
+    const float t = 0.050f;
+
+    // keep a little margin from top/bottom of the vest
+    const float y0 = -MS.torsoH * 0.5f + 0.015f;
+    const float y1 = MS.torsoH * 0.5f - 0.015f;
+
+    // tangent in XZ (perpendicular to rim direction)
+    const float tx = -sn, tz = cs;
+
+    // bottom inner/outer
+    const float xBi = (rBot + eps) * cs + (t * -0.5f) * tx;
+    const float zBi = (rBot + eps) * sn + (t * -0.5f) * tz;
+    const float xBo = (rBot + eps) * cs + (t * 0.5f) * tx;
+    const float zBo = (rBot + eps) * sn + (t * 0.5f) * tz;
+
+    // top inner/outer (uses rTop so the strip matches the taper)
+    const float xTi = (rTop + eps) * cs + (t * -0.5f) * tx;
+    const float zTi = (rTop + eps) * sn + (t * -0.5f) * tz;
+    const float xTo = (rTop + eps) * cs + (t * 0.5f) * tx;
+    const float zTo = (rTop + eps) * sn + (t * 0.5f) * tz;
+
+    GLboolean wasCull = glIsEnabled(GL_CULL_FACE);
+    if (wasCull) glDisable(GL_CULL_FACE);   // avoid disappearing when viewed edge-on
+
+    matRope();
+    glBegin(GL_QUADS);
+    glNormal3f(cs, 0.0f, sn);           // outward-ish normal
+    glVertex3f(xBi, y0, zBi);
+    glVertex3f(xBo, y0, zBo);
+    glVertex3f(xTo, y1, zTo);
+    glVertex3f(xTi, y1, zTi);
+    glEnd();
+
+    if (wasCull) glEnable(GL_CULL_FACE);
+}
+
 // Solid inner body so the vest opening shows SKIN, not the floor
 static void drawTorsoCore(bool asSkin = true) {
     if (asSkin) matSkin(); else matShirt();
@@ -51,21 +101,6 @@ static void drawVestTopYoke() {
     gluQuadricNormals(q, GLU_SMOOTH);
     gluDisk(q, rInner, rOuter, 48, 1);
     gluDeleteQuadric(q);
-    glPopMatrix();
-}
-
-// Gold trim pipes - more prominent for Nezha style
-static void drawEdgePipeAt(float deg) {
-    const float a = deg2rad(deg);
-    const float rAvg = 0.5f * (MS.torsoTopR + MS.torsoBotR) + 0.006f;
-    const float x = rAvg * cosf(a);
-    const float z = rAvg * sinf(a);
-
-    matRope(); // Gold color
-    glPushMatrix();
-    glTranslatef(x, 0.0f, z);
-    glRotatef(-90, 1, 0, 0);
-    drawCappedCylinder(0.022f, MS.torsoH * 0.85f, 24); // Slightly thicker trim
     glPopMatrix();
 }
 
@@ -124,94 +159,81 @@ static void drawSidePanels() {
 
 // ---------------- public ----------------
 void drawTorso() {
-    // Adjust vest to be more front-facing for better visibility
-    constexpr float VEST_GAP_DEG = 75.0f;  // Smaller gap, more coverage
+    // Opening width and a tiny yaw so the shell isn’t perfectly straight-on
+    constexpr float VEST_GAP_DEG = 75.0f;
     const float edgeL = 90.0f + VEST_GAP_DEG * 0.5f;
-    const float startDeg = edgeL;
-    const float sweepDeg = 360.0f - VEST_GAP_DEG;
+    const float edgeR = 90.0f - VEST_GAP_DEG * 0.5f;
+    const float yawDeg = -8.0f;                 // keep small; used for shell & gold
 
-    // Vest outer shell - positioned to show more from front
+    // --- Vest outer shell (tapered open cylinder) ---
     matVest();
     glPushMatrix();
-    // Rotate the entire vest slightly to show more front coverage
-    glRotatef(-10.0f, 0, 1, 0); // Rotate vest to face more forward
-    drawOpenCylinderY(MS.torsoBotR * 0.95f, MS.torsoTopR * 0.92f, MS.torsoH, startDeg, sweepDeg, 64);
+    glRotatef(yawDeg, 0, 1, 0);
+    drawOpenCylinderY(
+        MS.torsoBotR * 0.95f,                   // bottom radius
+        MS.torsoTopR * 0.92f,                   // top radius (smaller -> taper)
+        MS.torsoH,                              // height
+        edgeL,                                  // start (left rim)
+        360.0f - VEST_GAP_DEG,                  // sweep around to right rim
+        64);
     glPopMatrix();
 
-    // Solid inner body
+    // --- Solid inner core (skin) so the opening shows body, not the floor ---
     drawTorsoCore(/*asSkin=*/true);
-    
-    // Modify side panels to extend more to the front
-    matVest();
-    
-    // Left side panel - extend more forward
-    glPushMatrix();
-    glTranslatef(-0.45f, 0.0f, 0.15f); // Move closer to center and forward
-    glRotatef(25, 0, 1, 0); // Angle more toward front
-    glScalef(0.18f, MS.torsoH * 0.75f, 0.25f);
-    glutSolidCube(1.0f);
-    glPopMatrix();
-    
-    // Right side panel - extend more forward  
-    glPushMatrix();
-    glTranslatef(0.45f, 0.0f, 0.15f); // Move closer to center and forward
-    glRotatef(-25, 0, 1, 0); // Angle more toward front
-    glScalef(0.18f, MS.torsoH * 0.75f, 0.25f);
-    glutSolidCube(1.0f);
-    glPopMatrix();
-    
-    // Enhanced front panels - make them larger and more prominent
-    const float panelY = 0.1f;
-    const float panelZ = 0.38f;  // Even more forward
-    const float flare = 5.0f;    // Less flare, more straight
 
-    // LEFT front panel - larger
-    matVest();
-    glPushMatrix();
-    glTranslatef(-0.22f, panelY, panelZ);
-    glRotatef(flare, 0, 1, 0);
-    glScalef(0.32f, MS.torsoH * 0.85f, 0.05f); // Wider panels
-    glutSolidCube(1.0f);
-    glPopMatrix();
-
-    // RIGHT front panel - larger
-    glPushMatrix();
-    glTranslatef(0.22f, panelY, panelZ);
-    glRotatef(-flare, 0, 1, 0);
-    glScalef(0.32f, MS.torsoH * 0.85f, 0.05f);
-    glutSolidCube(1.0f);
-    glPopMatrix();
-
-    // Center chest detail
-    matRope();
-    glPushMatrix();
-    glTranslatef(0.0f, 0.2f, 0.40f); // More forward
-    glScalef(0.08f, 0.25f, 0.03f);
-    glutSolidCube(1.0f);
-    glPopMatrix();
-
-    // Close the top
+    // --- Close the top (yoke) ---
     drawVestTopYoke();
 
-    // Gold piping - adjust for new vest position
-    drawEdgePipeAt(90.0f + VEST_GAP_DEG * 0.5f - 10.0f);   // Adjust for rotation
-    drawEdgePipeAt(90.0f - VEST_GAP_DEG * 0.5f - 10.0f);   // Adjust for rotation
+    // --- Side panels: thinner/closer so they don’t protrude at the front ---
+    matVest();
+    // left
+    glPushMatrix();
+    glTranslatef(-0.42f, 0.0f, 0.05f);
+    glRotatef(14.0f, 0, 1, 0);
+    glScalef(0.12f, MS.torsoH * 0.74f, 0.16f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+    // right
+    glPushMatrix();
+    glTranslatef(0.42f, 0.0f, 0.05f);
+    glRotatef(-14.0f, 0, 1, 0);
+    glScalef(0.12f, MS.torsoH * 0.74f, 0.16f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
 
-    // Waist area
+    // --- Front panels: a touch narrower so the chest reads clearly ---
+    // left
+    glPushMatrix();
+    glTranslatef(-0.20f, 0.10f, 0.37f);
+    glRotatef(4.0f, 0, 1, 0);
+    glScalef(0.28f, MS.torsoH * 0.84f, 0.04f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+    // right
+    glPushMatrix();
+    glTranslatef(0.20f, 0.10f, 0.37f);
+    glRotatef(-4.0f, 0, 1, 0);
+    glScalef(0.28f, MS.torsoH * 0.84f, 0.04f);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+
+    // --- Waist band (slightly thinner/raised to avoid intersections) ---
     matVest();
     glPushMatrix();
-    glTranslatef(0.0f, -0.68f, 0.0f);
-    glScalef(1.15f, 0.22f, 0.55f);
+    glTranslatef(0.0f, -0.675f, 0.0f);
+    glScalef(1.12f, 0.20f, 0.54f);
     glutSolidCube(1.0f);
     glPopMatrix();
 
-    // Waist trim
-    matRope();
+    // --- Gold edges: draw LAST, with depth test off, inside same yaw as shell ---
+    glPushAttrib(GL_ENABLE_BIT);
+    glDisable(GL_DEPTH_TEST);                  // ensures both trims are visible
     glPushMatrix();
-    glTranslatef(0.0f, -0.68f, 0.0f);
-    glScalef(1.18f, 0.08f, 0.58f);
-    glutSolidCube(1.0f);
+    glRotatef(yawDeg, 0, 1, 0);
+    drawGoldEdgeAtDeg(edgeL);                  // left rim
+    drawGoldEdgeAtDeg(edgeR);                  // right rim
     glPopMatrix();
+    glPopAttrib();
 }
 
 void drawHipWrap() {
