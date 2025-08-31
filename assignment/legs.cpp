@@ -2,61 +2,64 @@
 #include "utils.hpp"
 #include "model.hpp"
 #include <GL/freeglut.h>
-
 namespace {
-    // internal helper: simple bare foot
-    void drawFoot(float sideX, float yBottom, float zOffset) {
-        matSkin(); // Use skin material for bare feet
-        
-        // Main foot body (elongated sphere)
+    // Foot built relative to the ANKLE position (ankleY = top of foot / end of shin)
+    void drawFootAt(float x, float ankleY, float z) {
+        matSkin();
+
+        // --- ankle sleeve (overlaps shin a bit so the joint is seamless) ---
         glPushMatrix();
-        glTranslatef(sideX, yBottom + 0.08f, zOffset + 0.12f);
-        glScalef(0.18f, 0.12f, 0.32f);
+        glTranslatef(x, ankleY, z);
+        glRotatef(-90, 1, 0, 0);              // GLU cylinder points +Z; rotate to +Y
+        drawCappedCylinder(0.21f, 0.14f, 24);  // same radius as lower-leg (0.21)
+        glPopMatrix();
+
+        // --- heel ---
+        glPushMatrix();
+        glTranslatef(x, ankleY - 0.10f, z - 0.03f);
+        glScalef(0.18f, 0.12f, 0.20f);
         drawSpherePrim(1.0f, 24, 16);
         glPopMatrix();
-        
-        // Heel (smaller sphere)
+
+        // --- forefoot / toes ---
         glPushMatrix();
-        glTranslatef(sideX, yBottom + 0.06f, zOffset - 0.08f);
-        glScalef(0.16f, 0.10f, 0.18f);
-        drawSpherePrim(1.0f, 20, 14);
-        glPopMatrix();
-        
-        // Ankle connection (small cylinder)
-        glPushMatrix();
-        glTranslatef(sideX, yBottom + 0.12f, zOffset);
-        glRotatef(-90, 1, 0, 0);
-        drawCappedCylinder(0.18f, 0.08f, 20);
+        glTranslatef(x, ankleY - 0.12f, z + 0.16f);
+        glScalef(0.22f, 0.12f, 0.30f);
+        drawSpherePrim(1.0f, 24, 16);
         glPopMatrix();
     }
 }
 
 void drawLeg(bool left) {
     const float side = left ? -1.f : 1.f;
-    matSkin();
+    const float x = side * MS.hipX;
+    const float hipY = -0.98f;           // where the thigh attaches to the shorts/hip
 
-    // upper leg
+    // ===== upper leg: from hip DOWN to knee =====
+    matSkin();
     glPushMatrix();
-    glTranslatef(side * MS.hipX, -0.98f, 0.0f);
+    glTranslatef(x, hipY - MS.upperLegH, 0.0f);     // place base so top ends at hipY
     glRotatef(-90, 1, 0, 0);
-    drawCappedCylinder(0.23f, MS.upperLegH, 28);
+    drawCappedCylinder(0.23f, MS.upperLegH, 28);    // grows upward to hipY
     glPopMatrix();
+
+    const float kneeY = hipY - MS.upperLegH;        // top of shin / bottom of thigh
 
     // knee
     glPushMatrix();
-    glTranslatef(side * MS.hipX, -0.98f - MS.upperLegH, 0.0f);
+    glTranslatef(x, kneeY, 0.0f);
     drawSpherePrim(0.17f);
     glPopMatrix();
 
-    // lower leg
+    // ===== lower leg (shin): from knee DOWN to ankle =====
     glPushMatrix();
-    glTranslatef(side * MS.hipX, -0.98f - MS.upperLegH, 0.0f);
+    glTranslatef(x, kneeY - MS.lowerLegH, 0.0f);    // base at ANKLE; top will be kneeY
     glRotatef(-90, 1, 0, 0);
-    drawCappedCylinder(0.21f, MS.lowerLegH, 28);
+    drawCappedCylinder(0.21f, MS.lowerLegH, 28);    // grows upward to kneeY
     glPopMatrix();
 
-    // bare foot (replacing boot)
-    drawFoot(side * MS.hipX,
-        -0.98f - MS.upperLegH - MS.lowerLegH - 0.06f,  // Raised slightly
-        0.0f);
+    const float ankleY = kneeY - MS.lowerLegH;
+
+    // ===== foot (sleeve overlaps shin) =====
+    drawFootAt(x, ankleY, 0.02f);
 }
