@@ -3,98 +3,46 @@
 #include "model.hpp"
 #include <GL/freeglut.h>
 
-// ======== internal helpers for torso ========
+// ---------------- helpers ----------------
+// Solid inner body so the vest opening shows SKIN, not the floor
+static void drawTorsoCore(bool asSkin = true) {
+    if (asSkin) matSkin(); else matShirt();
 
-// undershirt (cylinder inside the vest)
-static void drawInnerTorsoShell() {
-    matShirt();
-
-    glPushMatrix();
-    glRotatef(-90, 1, 0, 0);
-    const float down = 0.55f;
-    glTranslatef(0, 0, -down);
-
-    const float hTopSafe = MS.torsoH - 0.02f;
-    const float h = hTopSafe + down;
-
-    const float rTop = MS.torsoTopR * 0.88f;
+    // Slightly slimmer than the vest so it never pokes through
     const float rBot = MS.torsoBotR * 0.88f;
+    const float rTop = MS.torsoTopR * 0.86f;
 
-    GLUquadric* q = gluNewQuadric();
-    gluQuadricNormals(q, GLU_SMOOTH);
-    gluCylinder(q, rBot, rTop, h, 36, 1);
-    gluDisk(q, 0.0f, rBot, 36, 1);
-    glPushMatrix(); glTranslatef(0, 0, h); gluDisk(q, 0.0f, rTop, 36, 1); glPopMatrix();
-    gluDeleteQuadric(q);
-    glPopMatrix();
-}
+    // Height tucks under the yoke and down into the waist a touch
+    const float h = MS.torsoH - 0.02f;
 
-// curved shirt plate + emblem
-static void drawShirtFrontWithEmblem() {
-    // curved shirt plate
-    matShirt();
+    // GLU cylinders are along +Z; rotate to stand up on Y and center on origin
     glPushMatrix();
-    glTranslatef(0.0f, 0.00f, 0.26f);
-    glRotatef(90, 1, 0, 0);
-    const float R = 0.43f, TH = 0.04f;
-    GLUquadric* q = gluNewQuadric();
-    gluQuadricNormals(q, GLU_SMOOTH);
-    gluCylinder(q, R, R, TH, 40, 1);
-    gluDisk(q, 0.0, R, 40, 1);
-    glPushMatrix(); glTranslatef(0, 0, TH); gluDisk(q, 0.0, R, 40, 1); glPopMatrix();
-    gluDeleteQuadric(q);
-    glPopMatrix();
-
-    // emblem disk (use palette wrapper instead of raw setMaterial)
-    matScarf();
-    glPushMatrix();
-    glTranslatef(0.0f, 0.07f, 0.33f);
     glRotatef(-90, 1, 0, 0);
-    GLUquadric* q2 = gluNewQuadric();
-    gluQuadricNormals(q2, GLU_SMOOTH);
-    gluDisk(q2, 0.0f, 0.14f, 36, 1);
-    gluDeleteQuadric(q2);
+    glTranslatef(0, 0, -h * 0.5f);
+
+    // To be safe against culling on caps, temporarily disable cull
+    GLboolean wasCull = glIsEnabled(GL_CULL_FACE);
+    if (wasCull) glDisable(GL_CULL_FACE);
+
+    GLUquadric* q = gluNewQuadric();
+    gluQuadricNormals(q, GLU_SMOOTH);
+    gluCylinder(q, rBot, rTop, h, 44, 1);               // wall
+    gluDisk(q, 0.0f, rBot, 44, 1);                      // bottom cap
+    glPushMatrix(); glTranslatef(0, 0, h);
+    gluDisk(q, 0.0f, rTop, 44, 1);                      // top cap
+    glPopMatrix();
+
+    gluDeleteQuadric(q);
+    if (wasCull) glEnable(GL_CULL_FACE);
     glPopMatrix();
 }
 
-// vest panel (flat piece in front)
-static void drawVestPanel(bool left) {
-    const float side = left ? -1.f : 1.f;
-
-    // body panel
-    matVest();
-    glPushMatrix();
-    glTranslatef(side * 0.34f, 0.00f, 0.325f);
-    glRotatef(side * 8.0f, 0, 1, 0);
-    glScalef(0.35f, MS.torsoH * 0.80f, 0.06f);
-    glutSolidCube(1.0f);
-    glPopMatrix();
-
-    // outer trim
-    matRope();
-    glPushMatrix();
-    glTranslatef(side * 0.50f, 0.00f, 0.325f);
-    glRotatef(side * 8.0f, 0, 1, 0);
-    glScalef(0.04f, MS.torsoH * 0.86f, 0.065f);
-    glutSolidCube(1.0f);
-    glPopMatrix();
-
-    // inner trim
-    matRope();
-    glPushMatrix();
-    glTranslatef(side * 0.19f, 0.00f, 0.325f);
-    glRotatef(side * 8.0f, 0, 1, 0);
-    glScalef(0.03f, MS.torsoH * 0.78f, 0.065f);
-    glutSolidCube(1.0f);
-    glPopMatrix();
-}
-
-// thin annulus that closes vest top
+// a very thin annulus to close the vest at the shoulders (so no hole)
 static void drawVestTopYoke() {
     matVest();
     const float yTop = MS.torsoH * 0.5f;
     const float rOuter = MS.torsoTopR + 0.001f;
-    const float rInner = 0.34f;
+    const float rInner = 0.34f; // neck hole placeholder
 
     glPushMatrix();
     glTranslatef(0.0f, yTop, 0.0f);
@@ -106,27 +54,46 @@ static void drawVestTopYoke() {
     glPopMatrix();
 }
 
-// ======== public functions ========
+// gold edge pipe placed exactly on the two open rim angles
+static void drawEdgePipeAt(float deg) {
+    const float a = deg2rad(deg);
+    const float rAvg = 0.5f * (MS.torsoTopR + MS.torsoBotR) + 0.004f;
+    const float x = rAvg * cosf(a);
+    const float z = rAvg * sinf(a);
 
+    matRope();
+    glPushMatrix();
+    glTranslatef(x, 0.0f, z);
+    glRotatef(-90, 1, 0, 0);                   // cylinder axis -> Y
+    drawCappedCylinder(0.018f, MS.torsoH * 0.78f, 28);
+    glPopMatrix();
+}
+
+// ---------------- public ----------------
 void drawTorso() {
-    // open shell with front gap
-    constexpr float VEST_GAP_DEG = 100.0f;
-    const float gapDeg = VEST_GAP_DEG;
-    const float edgeL = 90.0f + gapDeg * 0.5f;
+    // Open vest shell (back + sides) with a clear front gap for the chest
+    constexpr float VEST_GAP_DEG = 95.0f;            // tweak if you want wider/narrower
+    const float edgeL = 90.0f + VEST_GAP_DEG * 0.5f;
     const float startDeg = edgeL;
-    const float sweepDeg = 360.0f - gapDeg;
+    const float sweepDeg = 360.0f - VEST_GAP_DEG;
 
+    // Vest outer shell
     matVest();
     glPushMatrix();
     drawOpenCylinderY(MS.torsoBotR, MS.torsoTopR, MS.torsoH, startDeg, sweepDeg, 72);
     glPopMatrix();
 
-    drawVestTopYoke();
-    drawShirtFrontWithEmblem();
-    drawVestPanel(true);
-    drawVestPanel(false);
+    // Solid inner body so it’s not see-through
+    drawTorsoCore(/*asSkin=*/true);            // swap to false to make it a gray shirt
 
-    // waist flap
+    // Close the top so you can’t see down inside
+    drawVestTopYoke();
+
+    // Gold piping at the two open edges
+    drawEdgePipeAt(90.0f + VEST_GAP_DEG * 0.5f);   // left edge
+    drawEdgePipeAt(90.0f - VEST_GAP_DEG * 0.5f);   // right edge
+
+    // Waist flap
     matVest();
     glPushMatrix();
     glTranslatef(0.0f, -0.72f, 0.0f);
@@ -136,6 +103,7 @@ void drawTorso() {
 }
 
 void drawHipWrap() {
+    // Solid wrap under the vest so the belt area is never see-through
     GLboolean wasCull = glIsEnabled(GL_CULL_FACE);
     if (wasCull) glDisable(GL_CULL_FACE);
 

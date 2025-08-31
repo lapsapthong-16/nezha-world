@@ -19,7 +19,7 @@ static void drawCharacter() {
 #if SHOW_HEAD
     glPushMatrix(); glTranslatef(0.0f, MS.headLift, 0.0f); drawHeadUnit(); glPopMatrix();
 #endif
-    drawBraidedBelt();
+    //drawBraidedBelt();
     glPopMatrix();
 
     glPushMatrix(); drawArmChain(true);  glPopMatrix();
