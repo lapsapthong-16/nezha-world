@@ -237,25 +237,27 @@ void drawTorso() {
 }
 
 void drawHipWrap() {
-    // More fitted hip wrap to match Nezha's proportions
+
     GLboolean wasCull = glIsEnabled(GL_CULL_FACE);
     if (wasCull) glDisable(GL_CULL_FACE);
 
     matVest();
     glPushMatrix();
-    glTranslatef(0.0f, -0.80f, 0.0f);
+    glTranslatef(0.0f, -0.74f, 0.0f); 
     glRotatef(-90, 1, 0, 0);
 
-    const float h = 0.35f;  // Shorter for better proportions
-    const float r = MS.torsoBotR * 0.92f; // More fitted
+    const float h = 0.12f;              // very short
+    const float r = MS.torsoBotR * 0.90f;
 
     GLUquadric* q = gluNewQuadric();
     gluQuadricNormals(q, GLU_SMOOTH);
-    gluCylinder(q, r, r * 0.95f, h, 32, 1); // Slight taper
-    gluDisk(q, 0.0f, r, 32, 1);
-    glPushMatrix(); glTranslatef(0, 0, h); gluDisk(q, 0.0f, r * 0.95f, 32, 1); glPopMatrix();
+
+    gluCylinder(q, r, r, h, 44, 1);     // wall only — no top/bottom disks
+
     gluDeleteQuadric(q);
     glPopMatrix();
 
     if (wasCull) glEnable(GL_CULL_FACE);
 }
+
+
