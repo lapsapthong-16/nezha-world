@@ -19,9 +19,9 @@ void drawArmChain(bool left) {
     // Small forward tilt so the forearm hangs in front of the body a bit
     glRotatef(6.0f, 1, 0, 0);
 
-    // --- Shoulder ball (skin) ---
+    // --- Shoulder ball (black fur like real panda) ---
     const float shoulderR = 0.23f;
-    matSkin();
+    matBlackFur();  // Changed from matSkin() to matBlackFur()
     drawSpherePrim(shoulderR);
 
     // --- Upper arm: make it LONGER so it goes INTO the shoulder and INTO the elbow ---
@@ -54,8 +54,8 @@ void drawArmChain(bool left) {
     drawSpherePrim(MS.jointR * 0.90f);
     glPopMatrix();
 
-    // --- Hand/fist ---
-    matSkin();
+    // --- Hand/fist (keep hands skin color like real pandas) ---
+    matSkin();  // Hands remain skin colored
     glPushMatrix();
     glTranslatef(0.0f, wristY - MS.jointR * 0.90f - 0.1f, 0.0f);
     glScalef(1.05f, 0.90f, 1.05f);

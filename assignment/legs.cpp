@@ -5,7 +5,7 @@
 namespace {
     // Foot built relative to the ANKLE position (ankleY = top of foot / end of shin)
     void drawFootAt(float x, float ankleY, float z) {
-        matSkin();
+        matSkin();  // Feet remain skin colored like panda paws
 
         // --- ankle sleeve (overlaps shin a bit so the joint is seamless) ---
         glPushMatrix();

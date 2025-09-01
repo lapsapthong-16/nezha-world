@@ -10,6 +10,11 @@
 
 // camera
 double camDist = 8.0, camYaw = 25.0, camPitch = 15.0;
+
+// mouse controls
+bool mouseDown = false;
+int lastMouseX = 0, lastMouseY = 0;
+
 #define SHOW_HEAD 1
 
 static void drawCharacter() {
@@ -89,6 +94,53 @@ void keyboard(unsigned char key, int, int) {
     glutPostRedisplay();
 }
 
+// Mouse callback functions
+void mouse(int button, int state, int x, int y) {
+    if (button == GLUT_LEFT_BUTTON) {
+        if (state == GLUT_DOWN) {
+            mouseDown = true;
+            lastMouseX = x;
+            lastMouseY = y;
+        } else {
+            mouseDown = false;
+        }
+    }
+}
+
+void mouseMotion(int x, int y) {
+    if (mouseDown) {
+        int deltaX = x - lastMouseX;
+        int deltaY = y - lastMouseY;
+        
+        // Horizontal mouse movement controls yaw (left/right rotation)
+        camYaw += deltaX * 0.5;
+        
+        // Vertical mouse movement controls pitch (up/down rotation)
+        camPitch -= deltaY * 0.5;
+        
+        // Clamp pitch to prevent camera flipping
+        if (camPitch > 89.0) camPitch = 89.0;
+        if (camPitch < -89.0) camPitch = -89.0;
+        
+        lastMouseX = x;
+        lastMouseY = y;
+        
+        glutPostRedisplay();
+    }
+}
+
+// Mouse wheel for zoom
+void mouseWheel(int wheel, int direction, int x, int y) {
+    if (direction > 0) {
+        camDist -= 0.5;
+        if (camDist < 3.0) camDist = 3.0;
+    } else {
+        camDist += 0.5;
+        if (camDist > 20.0) camDist = 20.0;
+    }
+    glutPostRedisplay();
+}
+
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -131,6 +183,12 @@ int main(int argc, char** argv) {
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutKeyboardFunc(keyboard);
+    
+    // Register mouse callbacks
+    glutMouseFunc(mouse);
+    glutMotionFunc(mouseMotion);
+    glutMouseWheelFunc(mouseWheel);
+    
     glutMainLoop();
     return 0;
 }

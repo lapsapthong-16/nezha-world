@@ -13,6 +13,9 @@ const float Palette::SCARF[3] = { 0.80f, 0.10f, 0.10f };
 const float Palette::GROUND[3] = { 0.10f, 0.12f, 0.14f };
 const float Palette::CLEAR[4] = { 0.85f, 0.85f, 0.88f, 1.0f };
 
+// Black fur for panda arms/legs
+const float Palette::BLACK_FUR[3] = { 0.12f, 0.12f, 0.12f };
+
 // ---------- material internals ----------
 static void setMaterial(float r, float g, float b, float shininess = 16.0f) {
     const GLfloat diff[] = { r, g, b, 1.0f };
@@ -45,6 +48,9 @@ void matBoot() { setMaterial(Palette::BOOT[0], Palette::BOOT[1], Palette::BOOT[2
 void matRope() { setMaterial(Palette::ROPE[0], Palette::ROPE[1], Palette::ROPE[2]); }
 void matScarf() { setMaterial(Palette::SCARF[0], Palette::SCARF[1], Palette::SCARF[2]); }
 void matGround() { setMaterial(Palette::GROUND[0], Palette::GROUND[1], Palette::GROUND[2]); }
+
+// Black fur material for panda arms/legs
+void matBlackFur() { setMaterialHair(Palette::BLACK_FUR[0], Palette::BLACK_FUR[1], Palette::BLACK_FUR[2]); }
 
 // ---------- primitives ----------
 void drawSpherePrim(float radius, int slices, int stacks) {
