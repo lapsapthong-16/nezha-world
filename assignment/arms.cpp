@@ -7,8 +7,6 @@ void drawArmChain(bool left) {
     const float side = left ? -1.f : 1.f;
 
     // --- Shoulder anchor computed from the torso measurements ---
-    // Put the joint a little below the yoke, just outside the vest shell,
-    // and a touch forward so it doesn't clip the chest panel.
     const float yShoulder = MS.torsoH * 0.5f - 0.10f;      // 10 cm under top
     const float xShoulder = side * (MS.torsoTopR * 0.92f + 0.03f); // just outside shell
     const float zShoulder = 0.06f;                          // slight forward offset
@@ -26,30 +24,40 @@ void drawArmChain(bool left) {
     matSkin();
     drawSpherePrim(shoulderR);
 
-    // --- Upper arm (capped cylinder, pointing down) ---
-    glTranslatef(0.0f, -MS.upperArmH * 0.5f - shoulderR * 0.20f, 0.0f); // start just below ball
+    // --- Upper arm: make it LONGER so it goes INTO the shoulder and INTO the elbow ---
+    const float upperArmLength = MS.upperArmH + shoulderR + MS.jointR;  // Extended length
     glPushMatrix();
-    glRotatef(-90, 1, 0, 0);            // make cylinder Y-down
-    drawCappedCylinder(MS.upperArmR, MS.upperArmH, 32);
+    glTranslatef(0.0f, -shoulderR - upperArmLength * 0.5f, 0.0f);
+    glRotatef(-90, 1, 0, 0);            
+    drawCappedCylinder(MS.upperArmR, upperArmLength, 32);  // LONGER cylinder
     glPopMatrix();
 
-    // --- Elbow joint ---
-    glTranslatef(0.0f, -MS.upperArmH * 0.5f - 0.01f, 0.0f);
+    // --- Elbow joint: positioned where upper arm ends ---
+    const float elbowY = -shoulderR - MS.upperArmH;
+    glPushMatrix();
+    glTranslatef(0.0f, elbowY, 0.0f);
     drawSpherePrim(MS.jointR);
-
-    // --- Forearm ---
-    glTranslatef(0.0f, -MS.lowerArmH * 0.5f - MS.jointR * 0.20f, 0.0f);
-    glPushMatrix();
-    glRotatef(-90, 1, 0, 0);
-    drawCappedCylinder(MS.lowerArmR, MS.lowerArmH, 32);
     glPopMatrix();
 
-    // --- Wrist + simple fist ---
-    glTranslatef(0.0f, -MS.lowerArmH * 0.5f - 0.01f, 0.0f);
-    drawSpherePrim(MS.jointR * 0.90f);
+    // --- Forearm: make it LONGER so it goes INTO the elbow and INTO the wrist ---
+    const float forearmLength = MS.lowerArmH + MS.jointR + MS.jointR * 0.9f;  // Extended length
+    glPushMatrix();
+    glTranslatef(0.0f, elbowY - forearmLength * 0.5f, 0.0f);
+    glRotatef(-90, 1, 0, 0);
+    drawCappedCylinder(MS.lowerArmR, forearmLength, 32);  // LONGER cylinder
+    glPopMatrix();
 
+    // --- Wrist joint ---
+    const float wristY = elbowY - MS.lowerArmH;
+    glPushMatrix();
+    glTranslatef(0.0f, wristY, 0.0f);
+    drawSpherePrim(MS.jointR * 0.90f);
+    glPopMatrix();
+
+    // --- Hand/fist ---
     matSkin();
     glPushMatrix();
+    glTranslatef(0.0f, wristY - MS.jointR * 0.90f - 0.1f, 0.0f);
     glScalef(1.05f, 0.90f, 1.05f);
     drawSpherePrim(0.25f, 28, 18);      // fist
     glPopMatrix();
