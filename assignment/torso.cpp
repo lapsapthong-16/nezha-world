@@ -54,32 +54,121 @@ static void drawGoldEdgeAtDeg(float deg)
     if (wasCull) glEnable(GL_CULL_FACE);
 }
 
-// Solid inner body so the vest opening shows SKIN, not the floor
-static void drawTorsoCore(bool asSkin = true) {
-    if (asSkin) matSkin(); else matShirt();
-
+// NATURAL Panda-style torso with curved transition like real pandas
+static void drawPandaTorsoCore() {
     // More fitted to body - closer to skin
-    const float rBot = MS.torsoBotR * 0.88f;  // Slightly more fitted
-    const float rTop = MS.torsoTopR * 0.85f;  // More fitted at top
-
-    // Height adjusted for better proportions
-    const float h = MS.torsoH - 0.01f;
-
+    const float rBot = MS.torsoBotR * 0.88f;  
+    const float rTop = MS.torsoTopR * 0.85f;  
+    const float h = MS.torsoH + 0.08f;  // Make torso slightly taller so white belly reaches vest top
+    
     // GLU cylinders are along +Z; rotate to stand up on Y and center on origin
     glPushMatrix();
     glRotatef(-90, 1, 0, 0);
     glTranslatef(0, 0, -h * 0.5f);
 
-    // To be safe against culling on caps, temporarily disable cull
     GLboolean wasCull = glIsEnabled(GL_CULL_FACE);
     if (wasCull) glDisable(GL_CULL_FACE);
 
     GLUquadric* q = gluNewQuadric();
     gluQuadricNormals(q, GLU_SMOOTH);
-    gluCylinder(q, rBot, rTop, h, 32, 1);               // wall
-    gluDisk(q, 0.0f, rBot, 32, 1);                      // bottom cap
-    glPushMatrix(); glTranslatef(0, 0, h);
-    gluDisk(q, 0.0f, rTop, 32, 1);                      // top cap
+    
+    // Natural curved panda pattern with angular segments for realistic look
+    const int numSlices = 25;  // More slices for smoother transition
+    const float sliceHeight = h / numSlices;
+    
+    for (int i = 0; i < numSlices; i++) {
+        float t = (float)i / (float)(numSlices - 1);  // 0.0 to 1.0 from bottom to top
+        float nextT = (float)(i + 1) / (float)(numSlices - 1);
+        
+        // Calculate radii at this height
+        float currentR = rBot + (rTop - rBot) * t;
+        float nextR = rBot + (rTop - rBot) * nextT;
+        
+        // Draw this slice with multiple angular segments for natural panda pattern
+        const int numSegments = 32;
+        const float angleStep = 360.0f / numSegments;
+        
+        for (int seg = 0; seg < numSegments; seg++) {
+            float angle = seg * angleStep;
+            float nextAngle = (seg + 1) * angleStep;
+            
+            // Calculate radii at this height
+            float currentR = rBot + (rTop - rBot) * t;
+            float nextR = rBot + (rTop - rBot) * nextT;
+            
+            // Natural panda pattern: curved white belly, black on sides and top
+            bool isBlack = false;
+            
+            // Top part (shoulders/chest) - mostly black above 70%
+            if (t > 0.7f) {
+                isBlack = true;
+            }
+            // Middle transition zone - create curved natural boundaries
+            else if (t > 0.35f && t <= 0.7f) {
+                // Create a natural curved white belly area in the front-center
+                float frontAngle = fmod(angle + 180.0f, 360.0f); // Normalize so front = 0
+                if (frontAngle > 180.0f) frontAngle = 360.0f - frontAngle;
+                
+                // White belly extends from front center, with natural curve
+                float heightFactor = (0.7f - t) / 0.35f; // 1.0 at bottom of transition, 0.0 at top
+                float bellyWidth = 65.0f + 25.0f * heightFactor; // Wider at bottom, narrower at top
+                
+                // Add natural curve - belly is wider in middle heights
+                float curveFactor = 4.0f * t * (1.0f - t); // Bell curve peaks at t=0.5
+                bellyWidth += 15.0f * curveFactor;
+                
+                if (frontAngle <= bellyWidth) {
+                    isBlack = false; // White belly
+                } else {
+                    isBlack = true;  // Black sides
+                }
+            }
+            // Bottom part - mostly white belly
+            else {
+                isBlack = false;
+            }
+            
+            // Set material - using the pure white like the head
+            if (isBlack) {
+                matBlackFur();
+            } else {
+                matPandaWhite();  // Pure white like the head
+            }
+            
+            // Draw segment
+            glPushMatrix();
+            glTranslatef(0, 0, i * sliceHeight);
+            if (i < numSlices - 1) {
+                float a1 = deg2rad(angle);
+                float a2 = deg2rad(nextAngle);
+                
+                // Draw a quad segment
+                glBegin(GL_QUADS);
+                // Bottom edge
+                glNormal3f(cosf(a1), 0, sinf(a1));
+                glVertex3f(currentR * cosf(a1), currentR * sinf(a1), 0);
+                glNormal3f(cosf(a2), 0, sinf(a2));
+                glVertex3f(currentR * cosf(a2), currentR * sinf(a2), 0);
+                // Top edge
+                glNormal3f(cosf(a2), 0, sinf(a2));
+                glVertex3f(nextR * cosf(a2), nextR * sinf(a2), sliceHeight);
+                glNormal3f(cosf(a1), 0, sinf(a1));
+                glVertex3f(nextR * cosf(a1), nextR * sinf(a1), sliceHeight);
+                glEnd();
+            }
+            glPopMatrix();
+        }
+    }
+    
+    // Bottom cap - white belly
+    matPandaWhite();
+    gluDisk(q, 0.0f, rBot, 32, 1);
+    
+    // Top cap - black shoulders
+    matBlackFur();
+    glPushMatrix();
+    glTranslatef(0, 0, h);
+    gluDisk(q, 0.0f, rTop, 32, 1);
     glPopMatrix();
 
     gluDeleteQuadric(q);
@@ -165,7 +254,7 @@ static void drawWaistSeal()
 
     matVest();                                  // same color as the vest
     glPushMatrix();
-    glTranslatef(0.0f, -0.690f, 0.0f);          // just under the vest’s bottom
+    glTranslatef(0.0f, -0.690f, 0.0f);          // just under the vestï¿½s bottom
     glRotatef(-90, 1, 0, 0);
 
     const float rTop = MS.torsoBotR * 0.915f;   // slightly inside the shell
@@ -186,7 +275,7 @@ static void drawWaistSeal()
 }
 // ---------------- public ----------------
 void drawTorso() {
-    // Opening width and a tiny yaw so the shell isn’t perfectly straight-on
+    // Opening width and a tiny yaw so the shell isn't perfectly straight-on
     constexpr float VEST_GAP_DEG = 75.0f;
     const float edgeL = 90.0f + VEST_GAP_DEG * 0.5f;
     const float edgeR = 90.0f - VEST_GAP_DEG * 0.5f;
@@ -205,15 +294,15 @@ void drawTorso() {
         64);
     glPopMatrix();
 
-    // --- Solid inner core (skin) so the opening shows body, not the floor ---
-    drawTorsoCore(/*asSkin=*/true);
+    // --- CHANGED: Use panda-style torso core instead of regular one ---
+    drawPandaTorsoCore();  // This replaces drawTorsoCore(/*asSkin=*/true);
 
     // --- Close the top (yoke) ---
     drawVestTopYoke();
 
     drawWaistSeal();
 
-    // --- Side panels: thinner/closer so they don’t protrude at the front ---
+    // --- Side panels: thinner/closer so they don't protrude at the front ---
     matVest();
     // left
     glPushMatrix();
@@ -281,7 +370,7 @@ void drawHipWrap() {
     GLUquadric* q = gluNewQuadric();
     gluQuadricNormals(q, GLU_SMOOTH);
 
-    gluCylinder(q, r, r, h, 44, 1);     // wall only — no top/bottom disks
+    gluCylinder(q, r, r, h, 44, 1);     // wall only ï¿½ no top/bottom disks
 
     gluDeleteQuadric(q);
     glPopMatrix();

@@ -16,6 +16,9 @@ const float Palette::CLEAR[4] = { 0.85f, 0.85f, 0.88f, 1.0f };
 // Black fur for panda arms/legs
 const float Palette::BLACK_FUR[3] = { 0.12f, 0.12f, 0.12f };
 
+// Pure white fur for panda belly
+const float Palette::WHITE_FUR[3] = { 0.95f, 0.95f, 0.95f };
+
 // ---------- material internals ----------
 static void setMaterial(float r, float g, float b, float shininess = 16.0f) {
     const GLfloat diff[] = { r, g, b, 1.0f };
@@ -51,6 +54,28 @@ void matGround() { setMaterial(Palette::GROUND[0], Palette::GROUND[1], Palette::
 
 // Black fur material for panda arms/legs
 void matBlackFur() { setMaterialHair(Palette::BLACK_FUR[0], Palette::BLACK_FUR[1], Palette::BLACK_FUR[2]); }
+
+// Pure white fur material for panda belly - EXACT copy of head's matWhite()
+void matWhiteFur() { 
+    const GLfloat amb[] = { 0.35f,0.35f,0.35f,1 };
+    const GLfloat diff[] = { 1,1,1,1 };
+    const GLfloat spec[] = { 0.3f,0.3f,0.3f,1 };
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diff);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec);
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 24);
+}
+
+// Head's exact matWhite function - for pure white like panda head
+void matPandaWhite() {
+    const GLfloat amb[] = { 0.35f,0.35f,0.35f,1 };
+    const GLfloat diff[] = { 1,1,1,1 };
+    const GLfloat spec[] = { 0.3f,0.3f,0.3f,1 };
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diff);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec);
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 24);
+}
 
 // ---------- primitives ----------
 void drawSpherePrim(float radius, int slices, int stacks) {

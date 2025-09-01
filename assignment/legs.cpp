@@ -5,7 +5,7 @@
 namespace {
     // Foot built relative to the ANKLE position (ankleY = top of foot / end of shin)
     void drawFootAt(float x, float ankleY, float z) {
-        matSkin();  // Feet remain skin colored like panda paws
+        matBlackFur();  // Changed to black like real panda paws!
 
         // --- ankle sleeve (overlaps shin a bit so the joint is seamless) ---
         glPushMatrix();
@@ -35,8 +35,8 @@ void drawLeg(bool left) {
     const float x = side * MS.hipX;
     const float hipY = -0.98f;           // where the thigh attaches to the shorts/hip
 
-    // ===== upper leg: from hip DOWN to knee =====
-    matSkin();
+    // ===== upper leg: from hip DOWN to knee (BLACK FUR) =====
+    matBlackFur();
     glPushMatrix();
     glTranslatef(x, hipY - MS.upperLegH, 0.0f);     // place base so top ends at hipY
     glRotatef(-90, 1, 0, 0);
@@ -45,13 +45,13 @@ void drawLeg(bool left) {
 
     const float kneeY = hipY - MS.upperLegH;        // top of shin / bottom of thigh
 
-    // knee
+    // knee (also black fur)
     glPushMatrix();
     glTranslatef(x, kneeY, 0.0f);
     drawSpherePrim(0.17f);
     glPopMatrix();
 
-    // ===== lower leg (shin): from knee DOWN to ankle =====
+    // ===== lower leg (shin): from knee DOWN to ankle (BLACK FUR) =====
     glPushMatrix();
     glTranslatef(x, kneeY - MS.lowerLegH, 0.0f);    // base at ANKLE; top will be kneeY
     glRotatef(-90, 1, 0, 0);
@@ -60,6 +60,6 @@ void drawLeg(bool left) {
 
     const float ankleY = kneeY - MS.lowerLegH;
 
-    // ===== foot (sleeve overlaps shin) =====
+    // ===== foot (WHITE like panda paws and head) =====
     drawFootAt(x, ankleY, 0.02f);
 }

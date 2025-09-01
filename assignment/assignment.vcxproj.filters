@@ -16,6 +16,9 @@
     <Filter Include="Source Files\BodyParts">
       <UniqueIdentifier>{8f00001b-3d77-4da0-9356-c96408f3ad84}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\BodyParts">
+      <UniqueIdentifier>{48fb7f1c-c4c6-42bd-886a-c3b16fb0436a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="torso.cpp">
@@ -47,29 +50,29 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="torso.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="utils.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="model.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="head.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="arms.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="legs.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\BodyParts</Filter>
     </ClInclude>
     <ClInclude Include="belt.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\BodyParts</Filter>
+    </ClInclude>
+    <ClInclude Include="head.hpp">
+      <Filter>Header Files\BodyParts</Filter>
+    </ClInclude>
+    <ClInclude Include="legs.hpp">
+      <Filter>Header Files\BodyParts</Filter>
+    </ClInclude>
+    <ClInclude Include="model.hpp">
+      <Filter>Header Files\BodyParts</Filter>
     </ClInclude>
     <ClInclude Include="shorts.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\BodyParts</Filter>
+    </ClInclude>
+    <ClInclude Include="torso.hpp">
+      <Filter>Header Files\BodyParts</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.hpp">
+      <Filter>Header Files\BodyParts</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

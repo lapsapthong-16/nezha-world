@@ -9,6 +9,7 @@ namespace Palette {
         BOOT[3], ROPE[3], SCARF[3], GROUND[3];
     extern const float CLEAR[4];
     extern const float BLACK_FUR[3];  // New black fur color
+    extern const float WHITE_FUR[3];  // Pure white for panda belly
 }
 
 // Materials (implemented in utils.cpp)
@@ -23,6 +24,8 @@ void matRope();
 void matScarf();
 void matGround();
 void matBlackFur();  // New black fur material
+void matWhiteFur();  // Pure white fur material for panda belly
+void matPandaWhite();  // Exact copy of head's matWhite() function
 
 // Primitive helpers (implemented in utils.cpp)
 void drawSpherePrim(float radius, int slices = 24, int stacks = 18);
