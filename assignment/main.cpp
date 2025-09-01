@@ -30,8 +30,8 @@ static void drawCharacter() {
     //drawBraidedBelt();
     glPopMatrix();
 
-    //glPushMatrix(); drawArmChain(true);  glPopMatrix();
-    //glPushMatrix(); drawArmChain(false); glPopMatrix();
+    glPushMatrix(); drawArmChain(true);  glPopMatrix();
+    glPushMatrix(); drawArmChain(false); glPopMatrix();
 
     drawShorts();
     glPushMatrix(); drawLeg(true);  glPopMatrix();
