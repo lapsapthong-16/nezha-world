@@ -48,7 +48,7 @@ void drawShorts() {
     // keep the top of each cuff right under hemY; extend DOWN and flare bottom
     const float cuffY = hemY - 0.02f;   // attach just under trunk hem
     const float cuffH = 0.30f;          // longer legs
-    const float cuffRTop = 0.30f;          // radius at cuff top
+    const float cuffRTop = 0.31f;          // radius at cuff top
     const float cuffRBot = 0.36f;          // larger -> visible flare at bottom
 
     // left cuff
@@ -73,5 +73,13 @@ void drawShorts() {
     matRope();
     glPushMatrix(); glTranslatef(-hipX, cuffY + cuffH - 0.005f, 0.0f); glRotatef(90, 1, 0, 0); glutSolidTorus(0.012f, cuffRTop + 0.01f, 10, 36); glPopMatrix();
     glPushMatrix(); glTranslatef(hipX, cuffY + cuffH - 0.005f, 0.0f); glRotatef(90, 1, 0, 0); glutSolidTorus(0.012f, cuffRTop + 0.01f, 10, 36); glPopMatrix();
+
+    matVest();
+    glPushMatrix();
+    glTranslatef(0.0f, hemY - 0.04f, 0.0f);
+    glScalef(0.22f, 0.08f, 0.10f);   // narrow front “bridge”
+    glutSolidCube(1.0f);
+    glPopMatrix();
+
 }
 
