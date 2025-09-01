@@ -242,14 +242,21 @@ void drawTorso() {
     glutSolidCube(1.0f);
     glPopMatrix();
 
-    // gold edges last, with depth disabled so both show
-    glPushAttrib(GL_ENABLE_BIT);
-    glDisable(GL_DEPTH_TEST);
+    // --- Gold edges: draw LAST with depth testing ON + small polygon offset ---
+    glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);                 // keep depth testing!
+    glDepthMask(GL_TRUE);                    // write depth
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    // Negative values pull the geometry slightly toward the camera to avoid z-fighting
+    glPolygonOffset(-1.0f, -1.0f);
+
     glPushMatrix();
     glRotatef(yawDeg, 0, 1, 0);
     drawGoldEdgeAtDeg(edgeL);
     drawGoldEdgeAtDeg(edgeR);
     glPopMatrix();
+
+    glDisable(GL_POLYGON_OFFSET_FILL);
     glPopAttrib();
 }
 
