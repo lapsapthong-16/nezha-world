@@ -10,7 +10,7 @@
 
 // camera
 double camDist = 8.0, camYaw = 25.0, camPitch = 15.0;
-#define SHOW_HEAD 0
+#define SHOW_HEAD 1
 
 static void drawCharacter() {
     // Move entire character up to prevent feet from going under platform
@@ -26,8 +26,8 @@ static void drawCharacter() {
     //drawBraidedBelt();
     glPopMatrix();
 
-    glPushMatrix(); drawArmChain(true);  glPopMatrix();
-    glPushMatrix(); drawArmChain(false); glPopMatrix();
+    //glPushMatrix(); drawArmChain(true);  glPopMatrix();
+    //glPushMatrix(); drawArmChain(false); glPopMatrix();
 
     drawShorts();
     glPushMatrix(); drawLeg(true);  glPopMatrix();
