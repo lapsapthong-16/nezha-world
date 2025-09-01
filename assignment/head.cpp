@@ -49,30 +49,42 @@ static void drawTaperCupY(float rBottom, float rTop, float h, int slices = 36) {
 
 // convenience
 static inline float zSurf(float r) { return r + 0.010f; }
+static void drawNeckStump(float R) {
+    matWhite(); // neck same as panda fur
+    glPushMatrix();
+    glTranslatef(0.0f, -0.40f * R, 0.0f);   // position right under the head
+    glScalef(0.55f * R, 0.30f * R, 0.55f * R); // slightly flattened cylinder
+    glutSolidCube(1.0f);
+    glPopMatrix();
+}
 
+
+// Eye patch + white + pupil (whites pushed clearly in front of the patch)
 static void drawEyePatch(float R, float x, float y, float z) {
-    // patch size ~ (0.20R, 0.26R, 0.10R)
+    // --- black patch (make it a little thinner in Z) ---
     matBlack();
     glPushMatrix();
     glTranslatef(x, y, z);
-    glScalef(0.20f*R, 0.26f*R, 0.10f*R);
+    glScalef(0.20f * R, 0.26f * R, 0.085f * R);   // was 0.10R -> 0.085R
     glutSolidSphere(1.0f, 18, 12);
     glPopMatrix();
 
-    // eye white on patch (~0.066R)
+    // --- eye white ---
+    // Push it well past the patch's front (patch depth ≈ 0.085R)
+    const float zWhite = z + 0.062f * R;          // increase if still hidden
     matWhite();
     glPushMatrix();
-    glTranslatef(x, y + 0.016f*R, z + 0.013f*R);
-    glScalef(0.066f*R, 0.066f*R, 0.030f*R);
-    glutSolidSphere(1.0f, 12, 8);
+    glTranslatef(x, y + 0.016f * R, zWhite);
+    glScalef(0.072f * R, 0.072f * R, 0.034f * R); // slightly larger white
+    glutSolidSphere(1.0f, 20, 16);
     glPopMatrix();
 
-    // pupil (~0.026R)
-    matBrown();
+    // --- pupil (sits on top of the white) ---
+    matBlack();
     glPushMatrix();
-    glTranslatef(x + 0.010f*R, y + 0.010f*R, z + 0.026f*R);
-    glScalef(0.026f*R, 0.026f*R, 0.016f*R);
-    glutSolidSphere(1.0f, 10, 8);
+    glTranslatef(x + 0.006f * R, y + 0.016f * R, zWhite + 0.012f * R);
+    glScalef(0.024f * R, 0.024f * R, 0.014f * R);
+    glutSolidSphere(1.0f, 14, 12);
     glPopMatrix();
 }
 
@@ -130,11 +142,11 @@ void drawHeadUnit() {
     drawSpherePrim(R, 32, 24);
     glPopMatrix();
 
-    // (3) EARS — a bit high and slightly forward
+    // (3) EARS — bigger, higher, more forward
     matBlack();
     const float earR = 0.28f * R;
-    glPushMatrix(); glTranslatef(-0.78f * R, 0.42f * R, 0.12f * R); drawSpherePrim(earR, 18, 12); glPopMatrix();
-    glPushMatrix(); glTranslatef(0.78f * R, 0.42f * R, 0.12f * R); drawSpherePrim(earR, 18, 12); glPopMatrix();
+    glPushMatrix(); glTranslatef(-0.95f * R, 0.46f * R, 0.22f * R); drawSpherePrim(earR, 18, 12); glPopMatrix();
+    glPushMatrix(); glTranslatef(0.95f * R, 0.46f * R, 0.22f * R); drawSpherePrim(earR, 18, 12); glPopMatrix();
 
     // (4) EYE PATCHES + EYES — a little higher on the face
     drawEyePatch(R, -0.18f * R, 0.06f * R, z);
@@ -150,6 +162,9 @@ void drawHeadUnit() {
     glRotatef(90, 1, 0, 0);
     glutSolidTorus(0.030f, 0.34f, 16, 36);
     glPopMatrix();
+
+    // (7) NECK STUMP
+    drawNeckStump(R);
 
     glPopMatrix();
 }

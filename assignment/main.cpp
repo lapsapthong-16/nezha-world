@@ -22,7 +22,7 @@ static void drawCharacter() {
     drawHipWrap();
 #if SHOW_HEAD
     glPushMatrix();
-    glTranslatef(0.0f, MS.headLift, 0.0f);
+    glTranslatef(0.0f, MS.headLift + 0.1f, 0.0f);
     glRotatef(-5.0f, 1, 0, 0);   // tiny forward tilt (optional)
     drawHeadUnit();
     glPopMatrix();
