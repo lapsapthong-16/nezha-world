@@ -3,191 +3,153 @@
 #include "model.hpp"
 #include <GL/freeglut.h>
 
-// Helper material functions for eyes
+// --- simple materials ---
 static void matWhite() {
-    const GLfloat diff[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    const GLfloat amb[] = { 0.3f, 0.3f, 0.3f, 1.0f };
-    const GLfloat spec[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+    const GLfloat amb[] = { 0.35f,0.35f,0.35f,1 };
+    const GLfloat diff[] = { 1,1,1,1 };
+    const GLfloat spec[] = { 0.3f,0.3f,0.3f,1 };
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diff);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec);
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 24);
 }
-
-static void matBrown() {
-    const GLfloat diff[] = { 0.3f, 0.2f, 0.1f, 1.0f };
-    const GLfloat amb[] = { 0.1f, 0.05f, 0.03f, 1.0f };
-    const GLfloat spec[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+static void matBlack() {
+    const GLfloat amb[] = { 0.05f,0.05f,0.05f,1 };
+    const GLfloat diff[] = { 0.08f,0.08f,0.08f,1 };
+    const GLfloat spec[] = { 0.05f,0.05f,0.05f,1 };
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diff);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec);
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 8.0f);
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 8);
+}
+static void matBrown() { // soft dark for pupils/mouth
+    const GLfloat amb[] = { 0.12f,0.08f,0.06f,1 };
+    const GLfloat diff[] = { 0.20f,0.14f,0.10f,1 };
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diff);
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 4);
+}
+// --- add this helper near the top of head.cpp (after includes/materials) ---
+static void drawTaperCupY(float rBottom, float rTop, float h, int slices = 36) {
+    // Upright tapered cup (closed at the bottom, open at the top) along +Y
+    glPushMatrix();
+    glRotatef(-90, 1, 0, 0);                    // GLU cylinders are Z-up
+    GLUquadric* q = gluNewQuadric();
+    gluQuadricNormals(q, GLU_SMOOTH);
+
+    // wall
+    gluCylinder(q, rBottom, rTop, h, slices, 1);
+
+    // bottom cap so you never see inside
+    gluDisk(q, 0.0f, rBottom, slices, 1);
+
+    gluDeleteQuadric(q);
+    glPopMatrix();
 }
 
-// Fixed eye function with proper materials and bigger size
-static void drawEye(float x, float y, float z, float scale = 1.0f) {
+// convenience
+static inline float zSurf(float r) { return r + 0.010f; }
+
+static void drawEyePatch(float R, float x, float y, float z) {
+    // patch size ~ (0.20R, 0.26R, 0.10R)
+    matBlack();
     glPushMatrix();
     glTranslatef(x, y, z);
-    glScalef(scale, scale, scale);
-    
-    // Eye white - made bigger
+    glScalef(0.20f*R, 0.26f*R, 0.10f*R);
+    glutSolidSphere(1.0f, 18, 12);
+    glPopMatrix();
+
+    // eye white on patch (~0.066R)
     matWhite();
     glPushMatrix();
-    glScalef(0.08f, 0.06f, 0.03f); // Bigger and more visible
-    glutSolidSphere(1.0f, 16, 12);
+    glTranslatef(x, y + 0.016f*R, z + 0.013f*R);
+    glScalef(0.066f*R, 0.066f*R, 0.030f*R);
+    glutSolidSphere(1.0f, 12, 8);
     glPopMatrix();
-    
-    // Eye iris - made bigger
+
+    // pupil (~0.026R)
     matBrown();
     glPushMatrix();
-    glTranslatef(0.0f, 0.0f, 0.02f);
-    glScalef(0.05f, 0.05f, 0.02f);
-    glutSolidSphere(1.0f, 12, 8);
-    glPopMatrix();
-    
-    // Eye pupil - made bigger
-    matHair();
-    glPushMatrix();
-    glTranslatef(0.0f, 0.0f, 0.025f);
-    glScalef(0.02f, 0.02f, 0.01f);
-    glutSolidSphere(1.0f, 8, 6);
-    glPopMatrix();
-    
+    glTranslatef(x + 0.010f*R, y + 0.010f*R, z + 0.026f*R);
+    glScalef(0.026f*R, 0.026f*R, 0.016f*R);
+    glutSolidSphere(1.0f, 10, 8);
     glPopMatrix();
 }
 
-// Fixed eyebrow function - made bigger
-static void drawEyebrow(float x, float y, float z, float angle, float scale = 1.0f) {
+// Nose + mouth, proportional
+static void drawNoseMouth(float R, float z) {
+    // nose center at ~ -0.12R below eye line
+    matBlack();
     glPushMatrix();
-    glTranslatef(x, y, z);
-    glRotatef(angle, 0, 0, 1);
-    glScalef(scale, scale, scale);
-    
-    matHair();
+    glTranslatef(0.0f, -0.116f*R, z + 0.017f*R);
+    glScalef(0.058f*R, 0.037f*R, 0.030f*R);
+    glutSolidSphere(1.0f, 10, 8);
+    glPopMatrix();
+
+    // simple mouth dash at ~ -0.175R
+    matBrown();
     glPushMatrix();
-    glScalef(0.10f, 0.02f, 0.015f); // Made bigger and more visible
+    glTranslatef(0.0f, -0.175f*R, z + 0.005f*R);
+    glScalef(0.083f*R, 0.020f*R, 0.013f*R);
     glutSolidCube(1.0f);
     glPopMatrix();
-    
-    glPopMatrix();
 }
 
-// Fixed hair horn function
-static void drawHairHorn(float x, float y, float z, float rotY = 0.0f) {
-    glPushMatrix();
-    glTranslatef(x, y, z);
-    glRotatef(rotY, 0, 1, 0);
-    
-    matHair();
-    
-    // Main horn body
-    glPushMatrix();
-    glRotatef(-15, 1, 0, 0);
-    glScalef(0.12f, 0.25f, 0.10f);
-    glutSolidSphere(1.0f, 16, 12);
-    glPopMatrix();
-    
-    // Tip of horn
-    glPushMatrix();
-    glTranslatef(0.0f, 0.18f, -0.04f);
-    glRotatef(-20, 1, 0, 0);
-    glScalef(0.06f, 0.12f, 0.06f);
-    glutSolidSphere(1.0f, 12, 8);
-    glPopMatrix();
-    
-    glPopMatrix();
+// Ears, proportional
+static void drawEars(float R) {
+    matBlack();
+    const float earR = 0.28f*R;
+    const float earY = 0.35f*R;
+    const float earX = 0.70f*R;
+    const float earZ = -0.10f*R;
+    glPushMatrix(); glTranslatef(-earX, earY, earZ); drawSpherePrim(earR, 18, 12); glPopMatrix();
+    glPushMatrix(); glTranslatef( earX, earY, earZ); drawSpherePrim(earR, 18, 12); glPopMatrix();
 }
-
-// Fixed forehead marking - made bigger
-static void drawForeheadMark() {
-    glPushMatrix();
-    glTranslatef(0.0f, 0.12f, 0.32f); // Adjusted position
-    
-    matScarf();
-    glPushMatrix();
-    glScalef(0.05f, 0.05f, 0.01f); // Made bigger
-    glutSolidSphere(1.0f, 16, 8);
-    glPopMatrix();
-    
-    glPopMatrix();
-}
-
-// Fixed mouth - made bigger
-static void drawMouth() {
-    glPushMatrix();
-    glTranslatef(0.0f, -0.06f, 0.31f); // Adjusted position
-    
-    matHair();
-    glPushMatrix();
-    glScalef(0.035f, 0.012f, 0.008f); // Made bigger
-    glutSolidCube(1.0f);
-    glPopMatrix();
-    
-    glPopMatrix();
-}
-
-// Fixed hair base
-static void drawHairBase(float headRadius) {
-    matHair();
-    
-    // Main hair volume
-    glPushMatrix();
-    glTranslatef(0.0f, 0.08f, -0.08f);
-    glScalef(0.85f, 0.6f, 0.7f);
-    glutSolidSphere(headRadius, 20, 16);
-    glPopMatrix();
-    
-    // Hair bangs
-    glPushMatrix();
-    glTranslatef(0.0f, 0.20f, 0.15f);
-    glScalef(0.4f, 0.15f, 0.2f);
-    glutSolidSphere(1.0f, 16, 12);
-    glPopMatrix();
-    
-    // Side hair pieces
-    glPushMatrix();
-    glTranslatef(-0.25f, 0.0f, 0.08f);
-    glScalef(0.18f, 0.3f, 0.18f);
-    glutSolidSphere(1.0f, 12, 10);
-    glPopMatrix();
-    
-    glPushMatrix();
-    glTranslatef(0.25f, 0.0f, 0.08f);
-    glScalef(0.18f, 0.3f, 0.18f);
-    glutSolidSphere(1.0f, 12, 10);
-    glPopMatrix();
-}
-
+// --- REPLACE your drawHeadUnit() with this version ---
 void drawHeadUnit() {
     glPushMatrix();
-    
-    // Use a better sized head - bigger than 0.45f but smaller than 0.95f
-    const float headRadius = 0.65f; // Good balance
-    
-    // Main head sphere (skin)
-    matSkin();
-    drawSpherePrim(headRadius, 24, 18);
-    
-    // Draw hair base
-    drawHairBase(headRadius);
-    
-    // Draw hair horns (properly scaled)
-    drawHairHorn(-0.18f, 0.25f, 0.1f, -15.0f);  // Left horn
-    drawHairHorn(0.18f, 0.25f, 0.1f, 15.0f);    // Right horn
-    
-    // Draw facial features (bigger and more visible)
-    drawEye(-0.12f, 0.05f, 0.28f);  // Left eye
-    drawEye(0.12f, 0.05f, 0.28f);   // Right eye
-    
-    // Draw eyebrows
-    drawEyebrow(-0.12f, 0.15f, 0.29f, 15.0f);   // Left eyebrow
-    drawEyebrow(0.12f, 0.15f, 0.29f, -15.0f);   // Right eyebrow
-    
-    // Draw forehead marking
-    drawForeheadMark();
-    
-    // Draw mouth
-    drawMouth();
-    
+
+    const float R = 0.70f;               // your chosen panda head "radius"
+    const float z = zSurf(R);            // surface Z for facial features
+
+    // (1) LOWER HEAD (slimmer neck connection) — a short tapered cup
+    //     Slightly narrower at the bottom, wider toward the face.
+    matWhite();
+    glPushMatrix();
+    glTranslatef(0.0f, -0.25f * R, 0.0f);             // sit a touch below center
+    drawTaperCupY(/*rBottom=*/0.78f * R,
+        /*rTop   =*/0.95f * R,
+        /*h      =*/0.55f * R,
+        /*slices =*/40);
+    glPopMatrix();
+
+    // (2) TOP DOME (round panda skull) — shifted up so the top feels fuller
+    glPushMatrix();
+    glTranslatef(0.0f, 0.16f * R, 0.0f);              // lift the dome up
+    glScalef(1.05f, 0.95f, 1.05f);                    // a hint of width
+    drawSpherePrim(R, 32, 24);
+    glPopMatrix();
+
+    // (3) EARS — a bit high and slightly forward
+    matBlack();
+    const float earR = 0.28f * R;
+    glPushMatrix(); glTranslatef(-0.78f * R, 0.42f * R, 0.12f * R); drawSpherePrim(earR, 18, 12); glPopMatrix();
+    glPushMatrix(); glTranslatef(0.78f * R, 0.42f * R, 0.12f * R); drawSpherePrim(earR, 18, 12); glPopMatrix();
+
+    // (4) EYE PATCHES + EYES — a little higher on the face
+    drawEyePatch(R, -0.18f * R, 0.06f * R, z);
+    drawEyePatch(R, 0.18f * R, 0.06f * R, z);
+
+    // (5) NOSE + MOUTH — slightly below patch line
+    drawNoseMouth(R, z);
+
+    // (6) optional tiny neck ring (keeps your old vibe — delete if you want)
+    matScarf();
+    glPushMatrix();
+    glTranslatef(0.0f, -0.36f * R, 0.0f);
+    glRotatef(90, 1, 0, 0);
+    glutSolidTorus(0.030f, 0.34f, 16, 36);
+    glPopMatrix();
+
     glPopMatrix();
 }
