@@ -58,34 +58,51 @@ static void drawNeckStump(float R) {
     glPopMatrix();
 }
 
-
-// Eye patch + white + pupil (whites pushed clearly in front of the patch)
-static void drawEyePatch(float R, float x, float y, float z) {
-    // --- black patch (make it a little thinner in Z) ---
+// Eye patch + eye overlays that never get buried
+static void drawEyePatch(float R, float x, float y, float zPatch)
+{
+    // 1) Black oval patch (a shallow scaled sphere)
     matBlack();
     glPushMatrix();
-    glTranslatef(x, y, z);
-    glScalef(0.20f * R, 0.26f * R, 0.085f * R);   // was 0.10R -> 0.085R
+    glTranslatef(x, y, zPatch);
+    const float patchZ = 0.085f * R;        // patch thickness in Z
+    glScalef(0.20f * R, 0.26f * R, patchZ);
     glutSolidSphere(1.0f, 18, 12);
     glPopMatrix();
 
-    // --- eye white ---
-    // Push it well past the patch's front (patch depth ≈ 0.085R)
-    const float zWhite = z + 0.062f * R;          // increase if still hidden
+    // 2) Draw eye overlays slightly in front of the patch.
+    //    Use depth test ON, but depth WRITE OFF, so they can't be hidden by the patch.
+    glPushAttrib(GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);                  // <- critical: don't write to depth
+
+    const float zOver = zPatch + patchZ + 0.004f * R;   // just past the patch
+
+    // --- Sclera (white), a bit larger so it reads clearly ---
     matWhite();
     glPushMatrix();
-    glTranslatef(x, y + 0.016f * R, zWhite);
-    glScalef(0.072f * R, 0.072f * R, 0.034f * R); // slightly larger white
+    glTranslatef(x - 0.010f * R, y + 0.016f * R, zOver);
+    glScalef(0.075f * R, 0.075f * R, 0.036f * R);
     glutSolidSphere(1.0f, 20, 16);
     glPopMatrix();
 
-    // --- pupil (sits on top of the white) ---
+    // --- Pupil (black) pushed even a touch further forward than sclera ---
     matBlack();
     glPushMatrix();
-    glTranslatef(x + 0.006f * R, y + 0.016f * R, zWhite + 0.012f * R);
-    glScalef(0.024f * R, 0.024f * R, 0.014f * R);
-    glutSolidSphere(1.0f, 14, 12);
+    glTranslatef(x + 0.006f * R, y + 0.010f * R, zOver + 0.012f * R);
+    glScalef(0.032f * R, 0.032f * R, 0.018f * R);
+    glutSolidSphere(1.0f, 16, 12);
     glPopMatrix();
+
+    // --- Small highlight (cute sparkle) ---
+    matWhite();
+    glPushMatrix();
+    glTranslatef(x + 0.018f * R, y + 0.024f * R, zOver + 0.018f * R);
+    glScalef(0.012f * R, 0.012f * R, 0.010f * R);
+    glutSolidSphere(1.0f, 12, 10);
+    glPopMatrix();
+
+    glPopAttrib();                          // restore depth writes
 }
 
 // Nose + mouth, proportional
