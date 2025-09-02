@@ -58,7 +58,7 @@ void drawArmChain(bool left) {
     matBlackFur();  // Changed to black like real panda paws!
     glPushMatrix();
     glTranslatef(0.0f, wristY - MS.jointR * 0.90f - 0.1f, 0.0f);
-    glScalef(1.05f, 0.90f, 1.05f);
+    glScalef(0.85f, 0.75f, 0.85f);
     drawSpherePrim(0.25f, 28, 18);      // fist
     glPopMatrix();
 
