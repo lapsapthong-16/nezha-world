@@ -144,7 +144,27 @@ static void drawCuteEye(float R, float x, float y, float zPatchCenter,
 
     glPopAttrib();
 }
+// Place a pair of ears higher on the head (toy-style silhouette)
+static void drawEarPairHigh(float R) {
+    matBlack();
 
+    // Tunables — raise Y, move slightly back in Z, a bit closer to the dome in X
+    const float earR = 0.26f * R;  // was 0.28R; slightly smaller looks cuter when higher
+    const float earX = 0.92f * R;  // horizontal offset
+    const float earY = 0.8f * R;  // HIGHER than before (was ~0.46R)
+    const float earZ = -0.05f * R; // a bit back so they hug the crown
+
+    // Slight squash so they read as panda ears (not perfect spheres)
+    const float sx = 1.00f, sy = 0.86f, sz = 0.94f;
+
+    for (int side = -1; side <= 1; side += 2) {
+        glPushMatrix();
+        glTranslatef(side * earX, earY, earZ);
+        glScalef(sx, sy, sz);
+        drawSpherePrim(earR, 18, 12);
+        glPopMatrix();
+    }
+}
 // Nose + mouth (always visible, slightly forward)
 static void drawNoseMouth(float R, float zSurface) {
     // push them in front of the (now ~0.070R) patch
@@ -175,7 +195,7 @@ static void drawNoseMouth(float R, float zSurface) {
 static void drawEars(float R) {
     matBlack();
     const float earR = 0.28f * R;
-    const float earY = 0.35f * R;
+    const float earY = 0.8f * R;
     const float earX = 0.70f * R;
     const float earZ = -0.10f * R;
     glPushMatrix(); glTranslatef(-earX, earY, earZ); drawSpherePrim(earR, 18, 12); glPopMatrix();
@@ -204,10 +224,7 @@ void drawHeadUnit() {
     glPopMatrix();
 
     // (3) EARS
-    matBlack();
-    const float earR = 0.28f * R;
-    glPushMatrix(); glTranslatef(-0.95f * R, 0.46f * R, 0.22f * R); drawSpherePrim(earR, 18, 12); glPopMatrix();
-    glPushMatrix(); glTranslatef(0.95f * R, 0.46f * R, 0.22f * R); drawSpherePrim(earR, 18, 12); glPopMatrix();
+    drawEarPairHigh(R);
 
     // (4) EYE PATCHES + EYES — now patches smaller so snout shows
     {

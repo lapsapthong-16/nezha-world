@@ -176,53 +176,55 @@ static void drawVestTopYoke(float yawDeg) {
     const float rOut = MS.torsoTopR + 0.002f;
     const float rIn = 0.38f;
 
-    // Make the yoke follow the same yaw as the vest shell
-    glPushMatrix();
-    glRotatef(yawDeg, 0, 1, 0);
+    // Arc definitions (angles in degrees): 0°=+X, 90°=+Z(front), 180°=-X, 270°=-Z
+    const float centerDeg = 270.0f;     // front
+    const float bellyDeg = 140.0f;    // black arc width (adjust 120–160 to taste)
+    const float startB = centerDeg - bellyDeg * 0.5f;
+    const float endB = centerDeg + bellyDeg * 0.5f;
 
-    // Base red ring (top yoke)
-    matVest();
+    // Tiny angular padding so red never peeks (prevents cracks at boundaries)
+    const float EPS_ANG = 0.8f;
 
-    // Safer: draw with culling OFF so winding/camera angle never hides it
+    // Slight radial bias so black sits cleanly on top (no z-fight)
+    const float epsR = 0.0020f;
+    const float rOutB = rOut + epsR;
+    const float rInB = rIn - epsR;
+
+    // We’ll draw with culling off to be robust from all views
     GLboolean wasCull = glIsEnabled(GL_CULL_FACE);
     if (wasCull) glDisable(GL_CULL_FACE);
 
     glPushMatrix();
-    glTranslatef(0.0f, yTop, 0.0f);
-    glRotatef(-90, 1, 0, 0);
+    glRotatef(yawDeg, 0, 1, 0);
 
-    GLUquadric* q = gluNewQuadric();
-    gluQuadricNormals(q, GLU_SMOOTH);
-    gluDisk(q, rIn, rOut, 96, 1);
-    gluDeleteQuadric(q);
-    glPopMatrix();
+    // --- RED yoke: draw only side/back arcs (skip the belly gap) ---
+    matVest();
 
-    // ---- Overlay the black "belly" arc on the front (+Z) ----
+    // Left red arc: from (endB + EPS) to 360 - (startB - EPS)
+    float startRed1 = endB + EPS_ANG;
+    float sweepRed1 = fmaxf(0.0f, (360.0f - startRed1) - (startB - EPS_ANG));
+    if (sweepRed1 > 0.0f) drawRingArcY(yTop, rIn, rOut, startRed1, sweepRed1, 96);
+
+    // Right red arc: from 0 to (startB - EPS)  (covers the small section before belly start)
+    float startRed2 = 0.0f;
+    float sweepRed2 = fmaxf(0.0f, (startB - EPS_ANG) - startRed2);
+    if (sweepRed2 > 0.0f) drawRingArcY(yTop, rIn, rOut, startRed2, sweepRed2, 96);
+
+    // --- BLACK belly arc (front) ---
     glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_POLYGON_OFFSET_FILL);
-    glPolygonOffset(-2.0f, -2.0f);          // stronger pull toward camera
+    glPolygonOffset(-2.5f, -2.5f);    // pull slightly toward camera
 
-    // Slight radial expansion/contraction so it cleanly covers the red
-    const float epsR = 0.0015f;
-    const float rOutB = rOut + epsR;
-    const float rInB = rIn - epsR;
-
-    // Center at front (+Z = 90°). Width controls how wide the black patch is.
-    const float centerDeg = 270.0f;  // use this instead of 90.0f
-    // front of the model
-    const float widthDeg = 140.0f;         // tweak 110–160 to taste
-    const float startDeg = centerDeg - widthDeg * 0.5f;
-
-    matFurBlackMatte();glDisable(GL_DEPTH_TEST);
-    drawRingArcY(yTop + 0.0015f, rInB, rOutB, startDeg, widthDeg, 64);glEnable(GL_DEPTH_TEST);
+    matFurBlackMatte();
+    drawRingArcY(yTop + 0.0008f, rInB, rOutB, startB, bellyDeg, 72);
 
     glDisable(GL_POLYGON_OFFSET_FILL);
     glPopAttrib();
 
-    if (wasCull) glEnable(GL_CULL_FACE);
-
     glPopMatrix();
+
+    if (wasCull) glEnable(GL_CULL_FACE);
 }
 
 static void drawSidePanels() {
