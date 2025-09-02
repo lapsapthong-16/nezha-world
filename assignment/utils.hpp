@@ -2,6 +2,10 @@
 #include <GL/freeglut.h>
 #include <cmath>
 
+// Fallback for M_PI if <cmath> didn’t define it
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 // Palette declarations (extern in header, defined in utils.cpp)
 namespace Palette {
     extern const float SKIN[3], HAIR[3], HAIR_RIM[3],
@@ -38,3 +42,16 @@ constexpr double PI_D = 3.14159265358979323846;
 
 inline float  deg2rad(float d) { return d * (PI_F / 180.0f); }
 inline double deg2rad(double d) { return d * (PI_D / 180.0); }
+// utils.hpp  (add near the top, after includes/guards)
+
+// Simple 3D vec so we don't depend on GLM here
+struct Vec3 {
+    float x, y, z;
+    Vec3() : x(0), y(0), z(0) {}
+    Vec3(float X, float Y, float Z) : x(X), y(Y), z(Z) {}
+};
+
+// --- Declaration of the helper primitives so other .cpps can call them ---
+void drawTinySphere(float r = 0.02f);
+void drawStudRing(float y, float radius, int count, float r = 0.02f);
+void drawStitchStrip(const Vec3& A, const Vec3& B, int count, float r = 0.012f);

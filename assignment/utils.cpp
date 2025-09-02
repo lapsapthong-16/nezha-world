@@ -1,4 +1,5 @@
-#include "utils.hpp"
+﻿#include "utils.hpp"
+#include <cmath>
 
 // ---------- palette (definitions) ----------
 const float Palette::SKIN[3] = { 1.00f, 0.85f, 0.75f };
@@ -106,3 +107,41 @@ void drawOpenCylinderY(float rBot, float rTop, float h, float startDeg, float sw
     }
     glEnd();
 }
+// Tiny sphere primitive to keep triangles low but silhouette visible
+void drawTinySphere(float r) { drawSpherePrim(r, 10, 8); }
+
+// Evenly spaced spheres around a circle at height y
+void drawStudRing(float y, float radius, int count, float r) {
+    glPushMatrix();
+    glTranslatef(0.0f, y, 0.0f);
+    for (int i = 0; i < count; ++i) {
+        float a = (2.0f * (float)M_PI * (float)i) / (float)count; // 0..2π
+        float x = radius * cosf(a);
+        float z = radius * sinf(a);
+        glPushMatrix();
+        glTranslatef(x, 0.0f, z);
+        drawTinySphere(r);  // 1 primitive per stud
+        glPopMatrix();
+    }
+    glPopMatrix();
+}
+
+// Linear stitch strip from A to B with N spheres
+void drawStitchStrip(const Vec3& A, const Vec3& B, int count, float r) {
+    glPushMatrix();
+    for (int i = 0; i < count; ++i) {
+        float t = (count <= 1) ? 0.5f : (float)i / (float)(count - 1);
+        Vec3 P(
+            A.x + t * (B.x - A.x),
+            A.y + t * (B.y - A.y),
+            A.z + t * (B.z - A.z)
+        );
+        glPushMatrix();
+        glTranslatef(P.x, P.y, P.z);
+        drawTinySphere(r);  // or swap for a tiny disk if you prefer
+        glPopMatrix();
+    }
+    glPopMatrix();
+}
+
+

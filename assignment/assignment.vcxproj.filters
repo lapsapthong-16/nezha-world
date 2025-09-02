@@ -39,9 +39,6 @@
     <ClCompile Include="model.cpp">
       <Filter>Source Files\BodyParts</Filter>
     </ClCompile>
-    <ClCompile Include="belt.cpp">
-      <Filter>Source Files\BodyParts</Filter>
-    </ClCompile>
     <ClCompile Include="legs.cpp">
       <Filter>Source Files\BodyParts</Filter>
     </ClCompile>
@@ -51,9 +48,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="arms.hpp">
-      <Filter>Header Files\BodyParts</Filter>
-    </ClInclude>
-    <ClInclude Include="belt.hpp">
       <Filter>Header Files\BodyParts</Filter>
     </ClInclude>
     <ClInclude Include="head.hpp">

@@ -6,7 +6,6 @@
 #include "arms.hpp"
 #include "shorts.hpp"
 #include "legs.hpp"
-#include "belt.hpp"
 
 // camera
 double camDist = 8.0, camYaw = 25.0, camPitch = 15.0;
@@ -32,7 +31,6 @@ static void drawCharacter() {
     drawHeadUnit();
     glPopMatrix();
 #endif
-    //drawBraidedBelt();
     glPopMatrix();
 
     glPushMatrix(); drawArmChain(true);  glPopMatrix();
