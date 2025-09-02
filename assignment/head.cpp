@@ -149,7 +149,7 @@ static void drawEarPairHigh(float R) {
     matBlack();
 
     // Tunables — raise Y, move slightly back in Z, a bit closer to the dome in X
-    const float earR = 0.26f * R;  // was 0.28R; slightly smaller looks cuter when higher
+    const float earR = 0.34f * R;  // was 0.28R; slightly smaller looks cuter when higher
     const float earX = 0.92f * R;  // horizontal offset
     const float earY = 0.8f * R;  // HIGHER than before (was ~0.46R)
     const float earZ = -0.05f * R; // a bit back so they hug the crown
@@ -206,7 +206,7 @@ static void drawEars(float R) {
 void drawHeadUnit() {
     glPushMatrix();
 
-    const float R = 0.70f;               // panda head "radius"
+    const float R = 0.66f;               // panda head "radius"
     const float z = zSurf(R);            // surface Z for facial features
 
     // (1) LOWER HEAD (slimmer neck connection)
