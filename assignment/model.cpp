@@ -1,2 +1,3 @@
 #include "model.hpp"
-ModelScale MS;   // definition
+
+ModelScale MS;
