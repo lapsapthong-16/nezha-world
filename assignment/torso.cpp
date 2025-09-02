@@ -147,19 +147,81 @@ static void drawPandaTorsoCore() {
     glPopMatrix();
 }
 
-// ---------- vest bits ----------
-static void drawVestTopYoke() {
-    matVest();
+// ---------- HELPER: draw a ring arc at a given Y (XZ plane, normal +Y) ----------
+static void drawRingArcY(float y, float rIn, float rOut, float startDeg, float sweepDeg, int segs) {
+    const float step = sweepDeg / float(segs);
+
+    glPushMatrix();
+    glTranslatef(0.0f, y, 0.0f);
+    glRotatef(-90.0f, 1, 0, 0);   // ring lies in XZ plane, normal +Y
+
+    glBegin(GL_QUAD_STRIP);
+    for (int i = 0; i <= segs; ++i) {
+        float deg = startDeg + step * float(i);   // 0°=+X, 90°=+Z (front)
+        float a = deg2rad(deg);
+        float c = cosf(a), s = sinf(a);
+
+        glNormal3f(0.0f, 1.0f, 0.0f);             // up
+        glVertex3f(rOut * c, rOut * s, 0.0f);     // outer edge
+        glVertex3f(rIn * c, rIn * s, 0.0f);     // inner edge
+    }
+    glEnd();
+
+    glPopMatrix();
+}
+
+// ---------- vest top yoke with black belly arc overlay ----------
+static void drawVestTopYoke(float yawDeg) {
     const float yTop = MS.torsoH * 0.5f;
     const float rOut = MS.torsoTopR + 0.002f;
     const float rIn = 0.38f;
+
+    // Make the yoke follow the same yaw as the vest shell
+    glPushMatrix();
+    glRotatef(yawDeg, 0, 1, 0);
+
+    // Base red ring (top yoke)
+    matVest();
+
+    // Safer: draw with culling OFF so winding/camera angle never hides it
+    GLboolean wasCull = glIsEnabled(GL_CULL_FACE);
+    if (wasCull) glDisable(GL_CULL_FACE);
+
     glPushMatrix();
     glTranslatef(0.0f, yTop, 0.0f);
     glRotatef(-90, 1, 0, 0);
+
     GLUquadric* q = gluNewQuadric();
     gluQuadricNormals(q, GLU_SMOOTH);
-    gluDisk(q, rIn, rOut, 48, 1);
+    gluDisk(q, rIn, rOut, 96, 1);
     gluDeleteQuadric(q);
+    glPopMatrix();
+
+    // ---- Overlay the black "belly" arc on the front (+Z) ----
+    glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(-2.0f, -2.0f);          // stronger pull toward camera
+
+    // Slight radial expansion/contraction so it cleanly covers the red
+    const float epsR = 0.0015f;
+    const float rOutB = rOut + epsR;
+    const float rInB = rIn - epsR;
+
+    // Center at front (+Z = 90°). Width controls how wide the black patch is.
+    const float centerDeg = 270.0f;  // use this instead of 90.0f
+    // front of the model
+    const float widthDeg = 140.0f;         // tweak 110–160 to taste
+    const float startDeg = centerDeg - widthDeg * 0.5f;
+
+    matFurBlackMatte();glDisable(GL_DEPTH_TEST);
+    drawRingArcY(yTop + 0.0015f, rInB, rOutB, startDeg, widthDeg, 64);glEnable(GL_DEPTH_TEST);
+
+    glDisable(GL_POLYGON_OFFSET_FILL);
+    glPopAttrib();
+
+    if (wasCull) glEnable(GL_CULL_FACE);
+
     glPopMatrix();
 }
 
@@ -230,7 +292,7 @@ void drawTorso() {
     drawPandaTorsoCore();
 
     // finishings
-    drawVestTopYoke();
+    drawVestTopYoke(yawDeg);
     drawWaistSeal();
     drawSidePanels();
 
