@@ -62,21 +62,20 @@ static void matRibbon() {
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
 }
-// slim ribbon that wraps around the ear; sizes driven by earR
+
 static void drawEarRibbon(float R, float earR) {
     glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_CURRENT_BIT);
     matRibbon();
 
-    // --- band around ear (major radius ~= ear radius) ---
     glPushMatrix();
-    glRotatef(90.f, 0, 1, 0);                 // torus axis -> X (ear points along X)
-    glRotatef(12.f, 1, 0, 0);                 // slight tilt for charm
-    const float minor = 0.06f * earR;         // band thickness
-    const float major = 0.98f * earR;         // sits just outside the ear
+    glRotatef(90.f, 0, 1, 0);                 
+    glRotatef(12.f, 1, 0, 0);               
+    const float minor = 0.06f * earR;      
+    const float major = 0.98f * earR;         
     glutSolidTorus(minor, major, 16, 48);
     glPopMatrix();
 
-    // --- bow loops (small petals sitting on the outer side) ---
+    // --- bow loops ---
     glPushMatrix();
     glTranslatef(0.35f * earR, 0.08f * earR, 0.0f);
     glScalef(0.30f * earR, 0.45f * earR, 0.12f * earR);
@@ -106,15 +105,14 @@ static void drawEarRibbon(float R, float earR) {
 
     glPopAttrib();
 }
-// Narrow ribbon band that hugs the head sphere at a fixed elevation.
-// Angles: phi 0°=+X, 90°=+Z (front), 180°=-X, 270°=-Z. elevDeg is latitude (0=equator, +90=top).
+
 static void drawHeadRibbonArc(float R, float elevDeg, float startDeg, float sweepDeg, float width)
 {
     const int   segs = 64;
-    const float epsR = 0.004f * R;     // lift off the surface to avoid z-fighting
+    const float epsR = 0.004f * R;     
     const float elev = deg2rad(elevDeg);
     const float cosE = cosf(elev), sinE = sinf(elev);
-    const float dElev = (width / R);   // small angular width for the band
+    const float dElev = (width / R);  
     const float elevOut = elev + dElev * 0.5f;
     const float elevIn = elev - dElev * 0.5f;
 
@@ -155,13 +153,11 @@ static void drawHeadRibbonArc(float R, float elevDeg, float startDeg, float swee
     glPopAttrib();
     glPopMatrix();
 }
-/// Small bow glued to the head near an ear.
-// (ax,ay,az) must be a point on or near the head sphere.
+
 static void drawHeadBowAt(float ax, float ay, float az, float R)
 {
     matRibbon();
 
-    // push slightly out along the surface normal so it doesn't sink into the head
     float len = sqrtf(ax * ax + ay * ay + az * az);
     if (len < 1e-6f) len = 1.0f;
     float nx = ax / len, ny = ay / len, nz = az / len;
@@ -203,7 +199,6 @@ static void drawEarPairHigh(float R) {
     const float earY = 0.80f * R;
     const float earZ = -0.05f * R;
 
-    // ear squash (you already had these)
     const float sx = 1.00f, sy = 0.86f, sz = 0.94f;
 
     // ribbon sizing
@@ -215,36 +210,31 @@ static void drawEarPairHigh(float R) {
         glPushMatrix();
         glTranslatef(side * earX, earY, earZ);
 
-        // ----- draw the EAR (scaled) -----
         matBlack();
         glPushMatrix();
         glScalef(sx, sy, sz);
         drawSpherePrim(earR, 18, 12);
         glPopMatrix();
 
-        // ----- draw TWO RIBBON BANDS IN THE SAME SCALED SPACE -----
-        // scale first so the torus is deformed exactly like the ear,
-        // then orient so the torus’ axis is X (a vertical “strap” around the ear)
         matRibbon();
 
         glPushMatrix();
         glScalef(sx, sy, sz);
-        glRotatef(90, 0, 1, 0);            // torus axis -> +X
-        glRotatef(14, 1, 0, 0);            // slight forward tilt
+        glRotatef(90, 0, 1, 0);            
+        glRotatef(14, 1, 0, 0);           
         glutSolidTorus(bandMinor, bandMajor + bias, 16, 48);
         glPopMatrix();
 
         glPushMatrix();
         glScalef(sx, sy, sz);
         glRotatef(90, 0, 1, 0);
-        glRotatef(-14, 1, 0, 0);            // slight backward tilt
+        glRotatef(-14, 1, 0, 0);           
         glutSolidTorus(bandMinor, bandMajor + bias, 16, 48);
         glPopMatrix();
 
-        // ----- small bow stuck to the ear surface (also in scaled space) -----
         glPushMatrix();
         glScalef(sx, sy, sz);
-        glTranslatef(0.00f, 0.88f * earR, 0.36f * earR);  // near top/front edge
+        glTranslatef(0.00f, 0.88f * earR, 0.36f * earR);  
         glScalef(0.22f * earR, 0.32f * earR, 0.10f * earR);
         glutSolidCube(1.0f);
         glPopMatrix();
@@ -253,7 +243,6 @@ static void drawEarPairHigh(float R) {
     }
 }
 
-// Create tapered cylinder for lower head
 static void drawTaperCupY(float rBottom, float rTop, float h, int slices = 36) {
     glPushMatrix();
     glRotatef(-90, 1, 0, 0);
@@ -391,14 +380,14 @@ void drawHeadUnit() {
         const float elevDeg = 47.0f;        // slightly lower to intersect ear root
         const float bandWidth = 0.025f * R;   // thinner
 
-        // Right ear: arc around +X (phi=0°)
+        // Right ear: arc around 
         drawHeadRibbonArc(R, elevDeg, 330.0f, 60.0f, bandWidth);
         drawHeadRibbonArc(R, elevDeg, 30.0f, 60.0f, bandWidth);
 
-        // Left ear: arc around -X (phi=180°)
+        // Left ear: arc around 
         drawHeadRibbonArc(R, elevDeg, 150.0f, 60.0f, bandWidth);
         drawHeadRibbonArc(R, elevDeg, 210.0f, 60.0f, bandWidth);
-    } // <— close block here; no glPopMatrix() needed
+    } // close block here; no glPopMatrix() needed
 
     // Eye patches + eyes
     const float zFace = zSurf(R);
