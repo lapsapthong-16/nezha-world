@@ -203,42 +203,53 @@ static void drawEarPairHigh(float R) {
     const float earY = 0.80f * R;
     const float earZ = -0.05f * R;
 
+    // ear squash (you already had these)
     const float sx = 1.00f, sy = 0.86f, sz = 0.94f;
+
+    // ribbon sizing
+    const float bandMinor = 0.055f * earR;     // tube thickness
+    const float bandMajor = 1.00f * earR;      // sits right on the ear radius
+    const float bias = 0.003f * R;         // tiny pull toward camera to prevent z-fight
 
     for (int side = -1; side <= 1; side += 2) {
         glPushMatrix();
         glTranslatef(side * earX, earY, earZ);
 
-        // ear
+        // ----- draw the EAR (scaled) -----
         matBlack();
         glPushMatrix();
         glScalef(sx, sy, sz);
         drawSpherePrim(earR, 18, 12);
         glPopMatrix();
 
-        // crossed ribbons that HUG the ear (torus axis -> X)
+        // ----- draw TWO RIBBON BANDS IN THE SAME SCALED SPACE -----
+        // scale first so the torus is deformed exactly like the ear,
+        // then orient so the torus’ axis is X (a vertical “strap” around the ear)
         matRibbon();
 
         glPushMatrix();
-        glRotatef(90, 0, 1, 0);          // axis Z -> X  (wrap around ear)
-        glRotatef(+12, 0, 0, 1);         // slight tilt
-        glutSolidTorus(0.05f * earR, 0.90f * earR, 16, 36);
+        glScalef(sx, sy, sz);
+        glRotatef(90, 0, 1, 0);            // torus axis -> +X
+        glRotatef(14, 1, 0, 0);            // slight forward tilt
+        glutSolidTorus(bandMinor, bandMajor + bias, 16, 48);
         glPopMatrix();
 
         glPushMatrix();
-        glRotatef(90, 0, 1, 0);          // axis Z -> X
-        glRotatef(-12, 0, 0, 1);         // opposite tilt
-        glutSolidTorus(0.05f * earR, 0.90f * earR, 16, 36);
+        glScalef(sx, sy, sz);
+        glRotatef(90, 0, 1, 0);
+        glRotatef(-14, 1, 0, 0);            // slight backward tilt
+        glutSolidTorus(bandMinor, bandMajor + bias, 16, 48);
         glPopMatrix();
 
-        // small knot near outer/top of ear
+        // ----- small bow stuck to the ear surface (also in scaled space) -----
         glPushMatrix();
-        glTranslatef(0.00f, 0.95f * earR, 0.25f * earR);
-        glScalef(0.20f * earR, 0.30f * earR, 0.08f * earR);
+        glScalef(sx, sy, sz);
+        glTranslatef(0.00f, 0.88f * earR, 0.36f * earR);  // near top/front edge
+        glScalef(0.22f * earR, 0.32f * earR, 0.10f * earR);
         glutSolidCube(1.0f);
         glPopMatrix();
 
-        glPopMatrix();
+        glPopMatrix(); // ear local space
     }
 }
 
