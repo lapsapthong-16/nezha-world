@@ -45,6 +45,12 @@
     <ClCompile Include="shorts.cpp">
       <Filter>Source Files\BodyParts</Filter>
     </ClCompile>
+    <ClCompile Include="cannon.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
+    <ClCompile Include="test.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="arms.hpp">
@@ -66,6 +72,9 @@
       <Filter>Header Files\BodyParts</Filter>
     </ClInclude>
     <ClInclude Include="utils.hpp">
+      <Filter>Header Files\BodyParts</Filter>
+    </ClInclude>
+    <ClInclude Include="cannon.hpp">
       <Filter>Header Files\BodyParts</Filter>
     </ClInclude>
   </ItemGroup>

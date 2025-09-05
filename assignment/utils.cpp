@@ -140,4 +140,203 @@ void drawStitchStrip(const Vec3& A, const Vec3& B, int count, float r) {
     glPopMatrix();
 }
 
+// Additional primitive functions for cannon
+void drawCuboidCannon(float cubX, float cubY, float cubZ) {
+    glBegin(GL_QUADS);
+
+    // Bottom face 
+    glNormal3f(0, -1, 0);
+    glVertex3f(-cubX, -cubY, -cubZ);
+    glVertex3f(-cubX, -cubY, cubZ);
+    glVertex3f(cubX, -cubY, cubZ);
+    glVertex3f(cubX, -cubY, -cubZ);
+
+    // Left face 
+    glNormal3f(-1, 0, 0);
+    glVertex3f(-cubX, cubY, -cubZ);
+    glVertex3f(-cubX, cubY, cubZ);
+    glVertex3f(-cubX, -cubY, cubZ);
+    glVertex3f(-cubX, -cubY, -cubZ);
+
+    // Front face
+    glNormal3f(0, 0, 1);
+    glVertex3f(-cubX, -cubY, cubZ);
+    glVertex3f(-cubX, cubY, cubZ);
+    glVertex3f(cubX, cubY, cubZ);
+    glVertex3f(cubX, -cubY, cubZ);
+
+    // Right face 
+    glNormal3f(1, 0, 0);
+    glVertex3f(cubX, -cubY, cubZ);
+    glVertex3f(cubX, cubY, cubZ);
+    glVertex3f(cubX, cubY, -cubZ);
+    glVertex3f(cubX, -cubY, -cubZ);
+
+    // Back face 
+    glNormal3f(0, 0, -1);
+    glVertex3f(cubX, -cubY, -cubZ);
+    glVertex3f(-cubX, -cubY, -cubZ);
+    glVertex3f(-cubX, cubY, -cubZ);
+    glVertex3f(cubX, cubY, -cubZ);
+
+    // Top face 
+    glNormal3f(0, 1, 0);
+    glVertex3f(cubX, cubY, cubZ);
+    glVertex3f(-cubX, cubY, cubZ);
+    glVertex3f(-cubX, cubY, -cubZ);
+    glVertex3f(cubX, cubY, -cubZ);
+
+    glEnd();
+}
+
+void drawCuboidBasedZero(float cubX, float cubY, float cubZ) {
+    glBegin(GL_QUADS);
+
+    // Bottom face 
+    glNormal3f(0, -1, 0);
+    glVertex3f(-cubX, -cubY, 0);
+    glVertex3f(-cubX, -cubY, cubZ);
+    glVertex3f(cubX, -cubY, cubZ);
+    glVertex3f(cubX, -cubY, 0);
+
+    // Left face 
+    glNormal3f(-1, 0, 0);
+    glVertex3f(-cubX, cubY, 0);
+    glVertex3f(-cubX, cubY, cubZ);
+    glVertex3f(-cubX, -cubY, cubZ);
+    glVertex3f(-cubX, -cubY, 0);
+
+    // Front face
+    glNormal3f(0, 0, 1);
+    glVertex3f(-cubX, -cubY, cubZ);
+    glVertex3f(-cubX, cubY, cubZ);
+    glVertex3f(cubX, cubY, cubZ);
+    glVertex3f(cubX, -cubY, cubZ);
+
+    // Right face 
+    glNormal3f(1, 0, 0);
+    glVertex3f(cubX, -cubY, cubZ);
+    glVertex3f(cubX, cubY, cubZ);
+    glVertex3f(cubX, cubY, 0);
+    glVertex3f(cubX, -cubY, 0);
+
+    // Back face 
+    glNormal3f(0, 0, -1);
+    glVertex3f(cubX, -cubY, 0);
+    glVertex3f(-cubX, -cubY, 0);
+    glVertex3f(-cubX, cubY, 0);
+    glVertex3f(cubX, cubY, 0);
+
+    // Top face 
+    glNormal3f(0, 1, 0);
+    glVertex3f(cubX, cubY, cubZ);
+    glVertex3f(-cubX, cubY, cubZ);
+    glVertex3f(-cubX, cubY, 0);
+    glVertex3f(cubX, cubY, 0);
+
+    glEnd();
+}
+
+void drawTriangularPrism(float triPx, float triPy, float triPz) {
+    glBegin(GL_QUADS);
+    // Bottom face
+    glNormal3f(0, -1, 0);
+    glVertex3f(triPx, 0, triPz);
+    glVertex3f(triPx, 0, -triPz);
+    glVertex3f(-triPx, 0, -triPz);
+    glVertex3f(-triPx, 0, triPz);
+
+    // Back face
+    glNormal3f(0, 0, -1);
+    glVertex3f(triPx, 0, -triPz);
+    glVertex3f(triPx, triPy, -triPz);
+    glVertex3f(-triPx, triPy, -triPz);
+    glVertex3f(-triPx, 0, -triPz);
+
+    // Slanted face
+    Vec3 v1(triPx * 2, 0, 0);
+    Vec3 v2(0, triPy, triPz * 2);
+    Vec3 normal(-v1.y * v2.z + v1.z * v2.y, 
+                 v1.x * v2.z - v1.z * v2.x, 
+                -v1.x * v2.y + v1.y * v2.x);
+    float len = sqrtf(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+    normal.x /= len; normal.y /= len; normal.z /= len;
+    
+    glNormal3f(normal.x, normal.y, normal.z);
+    glVertex3f(triPx, triPy, -triPz);
+    glVertex3f(-triPx, triPy, -triPz);
+    glVertex3f(-triPx, 0, triPz);
+    glVertex3f(triPx, 0, triPz);
+    glEnd();
+
+    glBegin(GL_TRIANGLES);
+    // Right triangular face
+    glNormal3f(1, 0, 0);
+    glVertex3f(triPx, 0, triPz);
+    glVertex3f(triPx, triPy, -triPz);
+    glVertex3f(triPx, 0, -triPz);
+
+    // Left triangular face
+    glNormal3f(-1, 0, 0);
+    glVertex3f(-triPx, 0, triPz);
+    glVertex3f(-triPx, triPy, -triPz);
+    glVertex3f(-triPx, 0, -triPz);
+    glEnd();
+}
+
+void drawCylinderCannon(float br, double tr, double h) {
+    GLUquadric* cylinder = gluNewQuadric();
+    gluQuadricNormals(cylinder, GLU_SMOOTH);
+    gluCylinder(cylinder, br, tr, h, 30, 30);
+    gluDeleteQuadric(cylinder);
+
+    // Draw caps
+    GLUquadric* disk = gluNewQuadric();
+    gluQuadricNormals(disk, GLU_SMOOTH);
+    gluDisk(disk, 0.0, br, 30, 1);
+    glPushMatrix(); 
+    glTranslatef(0, 0, h); 
+    gluDisk(disk, 0.0, tr, 30, 1); 
+    glPopMatrix();
+    gluDeleteQuadric(disk);
+}
+
+void drawCircleCannon(float rx, float ry) {
+    const int segments = 30;
+    glBegin(GL_TRIANGLE_FAN);
+    glNormal3f(0, 0, 1);
+    glVertex3f(0, 0, 0);
+    for (int i = 0; i <= segments; ++i) {
+        float angle = (2.0f * (float)M_PI * (float)i) / (float)segments;
+        float x = rx * cosf(angle);
+        float y = ry * sinf(angle);
+        glVertex3f(x, y, 0);
+    }
+    glEnd();
+}
+
+void drawSphereWithoutGLU(float radX, float radY, float radZ, float piDivide) {
+    const float PI = 3.141592f;
+    GLfloat x, y, z, sliceA, stackA;
+    int sliceNo = 30, stackNo = 30;
+    for (sliceA = 0.0; sliceA < 2 * PI / piDivide; sliceA += PI / sliceNo) {
+        glBegin(GL_TRIANGLE_STRIP);
+        for (stackA = 0.0; stackA < 2 * PI / piDivide; stackA += PI / stackNo) {
+            x = radX * cos(stackA) * sin(sliceA);
+            y = radY * sin(stackA) * sin(sliceA);
+            z = radZ * cos(sliceA);
+            glNormal3f(x / radX, y / radY, z / radZ);
+            glVertex3f(x, y, z);
+            
+            float nextSlice = sliceA + PI / sliceNo;
+            x = radX * cos(stackA) * sin(nextSlice);
+            y = radY * sin(stackA) * sin(nextSlice);
+            z = radZ * cos(nextSlice);
+            glNormal3f(x / radX, y / radY, z / radZ);
+            glVertex3f(x, y, z);
+        }
+        glEnd();
+    }
+}
+
 

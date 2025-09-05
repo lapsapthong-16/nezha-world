@@ -124,16 +124,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="arms.cpp" />
+    <ClCompile Include="cannon.cpp" />
     <ClCompile Include="head.cpp" />
     <ClCompile Include="legs.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model.cpp" />
     <ClCompile Include="shorts.cpp" />
+    <ClCompile Include="test.cpp" />
     <ClCompile Include="torso.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="arms.hpp" />
+    <ClInclude Include="cannon.hpp" />
     <ClInclude Include="head.hpp" />
     <ClInclude Include="legs.hpp" />
     <ClInclude Include="model.hpp" />

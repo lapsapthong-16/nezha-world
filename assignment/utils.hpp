@@ -55,3 +55,11 @@ struct Vec3 {
 void drawTinySphere(float r = 0.02f);
 void drawStudRing(float y, float radius, int count, float r = 0.02f);
 void drawStitchStrip(const Vec3& A, const Vec3& B, int count, float r = 0.012f);
+
+// Additional primitive functions for cannon
+void drawCuboidCannon(float cubX, float cubY, float cubZ);
+void drawCuboidBasedZero(float cubX, float cubY, float cubZ);
+void drawTriangularPrism(float triPx, float triPy, float triPz);
+void drawCylinderCannon(float br, double tr, double h);
+void drawSphereWithoutGLU(float radX, float radY, float radZ, float piDivide);
+void drawCircleCannon(float rx, float ry);
