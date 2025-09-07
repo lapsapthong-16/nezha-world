@@ -32,6 +32,9 @@ namespace {
 }
 
 void drawLeg(bool left) {
+    // Set polygon counter to count leg polygons
+    PolygonCounter::setCurrentPart(BodyPart::LEGS);
+    
     const float side = left ? -1.f : 1.f;
     const float x = side * MS.hipX;
     const float hipY = -0.98f;

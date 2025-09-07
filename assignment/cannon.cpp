@@ -214,6 +214,9 @@ void drawLaserBeam() {
 
 // Main laser cannon drawing function
 void drawLaserCannon() {
+    // Set polygon counter to count cannon polygons
+    PolygonCounter::setCurrentPart(BodyPart::CANNON);
+    
     glPushMatrix();
     
     // Main barrel assembly

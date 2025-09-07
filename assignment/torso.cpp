@@ -254,14 +254,14 @@ static void drawSidePanels() {
     glTranslatef(-0.42f, 0.0f, 0.05f);
     glRotatef(14.0f, 0, 1, 0);
     glScalef(0.12f, MS.torsoH * 0.74f, 0.16f);
-    glutSolidCube(1.0f);
+    countGlutSolidCube(1.0f);
     glPopMatrix();
 
     glPushMatrix();
     glTranslatef(0.42f, 0.0f, 0.05f);
     glRotatef(-14.0f, 0, 1, 0);
     glScalef(0.12f, MS.torsoH * 0.74f, 0.16f);
-    glutSolidCube(1.0f);
+    countGlutSolidCube(1.0f);
     glPopMatrix();
 }
 
@@ -294,6 +294,9 @@ static void drawWaistSeal() {
 
 // Main torso drawing function
 void drawTorso() {
+    // Set polygon counter to count torso polygons
+    PolygonCounter::setCurrentPart(BodyPart::TORSO);
+    
     constexpr float VEST_GAP_DEG = 75.0f;
     const float edgeL = 90.0f + VEST_GAP_DEG * 0.5f;
     const float edgeR = 90.0f - VEST_GAP_DEG * 0.5f;
@@ -319,7 +322,7 @@ void drawTorso() {
     glPushMatrix();
     glTranslatef(0.0f, -0.675f, 0.0f);
     glScalef(1.12f, 0.20f, 0.54f);
-    glutSolidCube(1.0f);
+    countGlutSolidCube(1.0f);
     glPopMatrix();
 
     // Decorative elements
@@ -373,6 +376,9 @@ void drawTorso() {
 }
 
 void drawHipWrap() {
+    // Set polygon counter to count torso polygons
+    PolygonCounter::setCurrentPart(BodyPart::TORSO);
+    
     GLboolean wasCull = glIsEnabled(GL_CULL_FACE);
     if (wasCull) glDisable(GL_CULL_FACE);
 

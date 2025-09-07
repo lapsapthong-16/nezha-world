@@ -4,6 +4,9 @@
 #include <GL/freeglut.h>
 
 void drawShorts() {
+    // Set polygon counter to count shorts polygons
+    PolygonCounter::setCurrentPart(BodyPart::SHORTS);
+    
     const float hipX = MS.hipX;
     const float hipY = -0.98f;
     const float topY = hipY + 0.34f;
@@ -27,7 +30,7 @@ void drawShorts() {
     glPushMatrix();
     glTranslatef(0.0f, topY + 0.024f, 0.0f);
     glRotatef(90, 1, 0, 0);
-    glutSolidTorus(0.014f, waistR + 0.004f, 12, 44);
+    countGlutSolidTorus(0.014f, waistR + 0.004f, 12, 44);
     glPopMatrix();
 
     // Main shorts body
@@ -39,13 +42,13 @@ void drawShorts() {
     glPushMatrix(); 
     glTranslatef(0.0f, midY, depth * 0.98f);  
     glScalef(width * 0.82f, trunkH, 0.06f); 
-    glutSolidCube(1.0f); 
+    countGlutSolidCube(1.0f); 
     glPopMatrix();
     
     glPushMatrix(); 
     glTranslatef(0.0f, midY, -depth * 0.98f);  
     glScalef(width * 0.82f, trunkH, 0.06f); 
-    glutSolidCube(1.0f); 
+    countGlutSolidCube(1.0f); 
     glPopMatrix();
 
     // Side panels
@@ -53,14 +56,14 @@ void drawShorts() {
     glTranslatef(-width * 0.46f, midY, 0.0f); 
     glRotatef(8, 0, 1, 0);  
     glScalef(0.08f, trunkH, depth * 1.70f); 
-    glutSolidCube(1.0f); 
+    countGlutSolidCube(1.0f); 
     glPopMatrix();
     
     glPushMatrix(); 
     glTranslatef(width * 0.46f, midY, 0.0f); 
     glRotatef(-8, 0, 1, 0); 
     glScalef(0.08f, trunkH, depth * 1.70f); 
-    glutSolidCube(1.0f); 
+    countGlutSolidCube(1.0f); 
     glPopMatrix();
 
     // Leg cuffs
@@ -94,13 +97,13 @@ void drawShorts() {
     glPushMatrix(); 
     glTranslatef(-hipX, cuffY + cuffH - 0.005f, 0.0f); 
     glRotatef(90, 1, 0, 0); 
-    glutSolidTorus(0.012f, cuffRTop + 0.01f, 10, 36); 
+    countGlutSolidTorus(0.012f, cuffRTop + 0.01f, 10, 36); 
     glPopMatrix();
     
     glPushMatrix(); 
     glTranslatef(hipX, cuffY + cuffH - 0.005f, 0.0f); 
     glRotatef(90, 1, 0, 0); 
-    glutSolidTorus(0.012f, cuffRTop + 0.01f, 10, 36); 
+    countGlutSolidTorus(0.012f, cuffRTop + 0.01f, 10, 36); 
     glPopMatrix();
 
     // Front bridge piece
@@ -108,7 +111,7 @@ void drawShorts() {
     glPushMatrix();
     glTranslatef(0.0f, hemY - 0.04f, 0.0f);
     glScalef(0.22f, 0.08f, 0.10f);
-    glutSolidCube(1.0f);
+    countGlutSolidCube(1.0f);
     glPopMatrix();
 }
 

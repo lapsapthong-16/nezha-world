@@ -4,6 +4,9 @@
 #include <GL/freeglut.h>
 
 void drawArmChain(bool left) {
+    // Set polygon counter to count arm polygons
+    PolygonCounter::setCurrentPart(BodyPart::ARMS);
+    
     const float side = left ? -1.f : 1.f;
 
     // Calculate shoulder position

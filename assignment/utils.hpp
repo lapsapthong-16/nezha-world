@@ -63,3 +63,34 @@ void drawTriangularPrism(float triPx, float triPy, float triPz);
 void drawCylinderCannon(float br, double tr, double h);
 void drawSphereWithoutGLU(float radX, float radY, float radZ, float piDivide);
 void drawCircleCannon(float rx, float ry);
+
+// Polygon counting system
+enum class BodyPart {
+    HEAD,
+    ARMS,
+    TORSO,
+    LEGS,
+    SHORTS,
+    CANNON,
+    TOTAL_PARTS
+};
+
+class PolygonCounter {
+public:
+    static void reset();
+    static void setCurrentPart(BodyPart part);
+    static void addPolygons(int count);
+    static void printToConsole();
+    static int getTotalPolygons();
+    static int getPartPolygons(BodyPart part);
+    
+private:
+    static int partCounts[static_cast<int>(BodyPart::TOTAL_PARTS)];
+    static BodyPart currentPart;
+    static const char* partNames[static_cast<int>(BodyPart::TOTAL_PARTS)];
+};
+
+// Helper functions for counting GLUT primitives
+void countGlutSolidSphere(double radius, int slices = 24, int stacks = 18);
+void countGlutSolidCube(double size);
+void countGlutSolidTorus(double innerRadius, double outerRadius, int nsides, int rings);

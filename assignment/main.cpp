@@ -18,6 +18,9 @@ int lastMouseX = 0, lastMouseY = 0;
 #define SHOW_HEAD 1
 
 static void drawCharacter() {
+    // Reset polygon counter at the start of each frame
+    PolygonCounter::reset();
+    
     glPushMatrix();
     glTranslatef(0.0f, 0.55f, 0.0f);
     
@@ -60,7 +63,7 @@ static void drawCharacter() {
     drawLaserCannon();
     glPopMatrix();
     
-    // === RIGHT beam (match RIGHT cannon’s transform) ===
+    // === RIGHT beam (match RIGHT cannonï¿½s transform) ===
     glPushMatrix();
     glTranslatef(0.65f, 1.05f, 0.0f);   // SAME as cannon
     glRotatef(25.0f, 0, 0, 1);          // SAME roll
@@ -76,7 +79,7 @@ static void drawCharacter() {
     glPopMatrix();
 
 
-    // === LEFT beam (match LEFT cannon’s transform) ===
+    // === LEFT beam (match LEFT cannonï¿½s transform) ===
     glPushMatrix();
     glTranslatef(-0.65f, 1.05f, 0.0f);  // SAME as cannon
     glRotatef(-25.0f, 0, 0, 1);         // SAME roll (opposite sign)
@@ -120,10 +123,19 @@ void display() {
     glPushMatrix(); 
     glTranslatef(0, -1.50f, 0); 
     glScalef(8, 0.05f, 8); 
+    // Don't count ground plane in character polygon count
     glutSolidCube(1.0f); 
     glPopMatrix();
 
     drawCharacter();
+    
+    // Print polygon counts to console automatically
+    static int frameCount = 0;
+    frameCount++;
+    if (frameCount == 1) { // Print once when program starts
+        PolygonCounter::printToConsole();
+    }
+    
     glutSwapBuffers();
 }
 
@@ -148,6 +160,9 @@ void keyboard(unsigned char key, int, int) {
     // Cannon controls
     case 'c': case 'C': toggleCannon(); break;  // Toggle cannon on/off
     case 'v': case 'V': fireCannon(); break;    // Fire laser
+    
+    // Polygon count controls
+    case 'p': case 'P': PolygonCounter::printToConsole(); break;  // Print polygon counts to console
     }
     glutPostRedisplay();
 }

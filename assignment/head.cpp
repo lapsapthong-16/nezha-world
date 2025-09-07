@@ -72,20 +72,20 @@ static void drawEarRibbon(float R, float earR) {
     glRotatef(12.f, 1, 0, 0);               
     const float minor = 0.06f * earR;      
     const float major = 0.98f * earR;         
-    glutSolidTorus(minor, major, 16, 48);
+    countGlutSolidTorus(minor, major, 16, 48);
     glPopMatrix();
 
     // --- bow loops ---
     glPushMatrix();
     glTranslatef(0.35f * earR, 0.08f * earR, 0.0f);
     glScalef(0.30f * earR, 0.45f * earR, 0.12f * earR);
-    glutSolidCube(1.0f);
+    countGlutSolidCube(1.0f);
     glPopMatrix();
 
     glPushMatrix();
     glTranslatef(-0.35f * earR, 0.08f * earR, 0.0f);
     glScalef(0.30f * earR, 0.45f * earR, 0.12f * earR);
-    glutSolidCube(1.0f);
+    countGlutSolidCube(1.0f);
     glPopMatrix();
 
     // --- tails ---
@@ -93,14 +93,14 @@ static void drawEarRibbon(float R, float earR) {
     glTranslatef(0.18f * earR, -0.75f * earR, -0.05f * earR);
     glRotatef(12.f, 0, 0, 1);
     glScalef(0.14f * earR, 0.85f * earR, 0.09f * earR);
-    glutSolidCube(1.0f);
+    countGlutSolidCube(1.0f);
     glPopMatrix();
 
     glPushMatrix();
     glTranslatef(-0.18f * earR, -0.75f * earR, -0.05f * earR);
     glRotatef(-12.f, 0, 0, 1);
     glScalef(0.14f * earR, 0.85f * earR, 0.09f * earR);
-    glutSolidCube(1.0f);
+    countGlutSolidCube(1.0f);
     glPopMatrix();
 
     glPopAttrib();
@@ -169,13 +169,13 @@ static void drawHeadBowAt(float ax, float ay, float az, float R)
     glPushMatrix();
     glTranslatef(px + 0.035f * R, py + 0.010f * R, pz);
     glScalef(0.060f * R, 0.090f * R, 0.024f * R);
-    glutSolidCube(1.0f);
+    countGlutSolidCube(1.0f);
     glPopMatrix();
 
     glPushMatrix();
     glTranslatef(px - 0.035f * R, py + 0.010f * R, pz);
     glScalef(0.060f * R, 0.090f * R, 0.024f * R);
-    glutSolidCube(1.0f);
+    countGlutSolidCube(1.0f);
     glPopMatrix();
 
     // tails
@@ -183,14 +183,14 @@ static void drawHeadBowAt(float ax, float ay, float az, float R)
     glTranslatef(px + 0.020f * R, py - 0.120f * R, pz - 0.010f * R);
     glRotatef(12.f, 0, 0, 1);
     glScalef(0.028f * R, 0.150f * R, 0.020f * R);
-    glutSolidCube(1.0f);
+    countGlutSolidCube(1.0f);
     glPopMatrix();
 
     glPushMatrix();
     glTranslatef(px - 0.020f * R, py - 0.120f * R, pz - 0.010f * R);
     glRotatef(-12.f, 0, 0, 1);
     glScalef(0.028f * R, 0.150f * R, 0.020f * R);
-    glutSolidCube(1.0f);
+    countGlutSolidCube(1.0f);
     glPopMatrix();
 }
 static void drawEarPairHigh(float R) {
@@ -222,21 +222,21 @@ static void drawEarPairHigh(float R) {
         glScalef(sx, sy, sz);
         glRotatef(90, 0, 1, 0);            
         glRotatef(14, 1, 0, 0);           
-        glutSolidTorus(bandMinor, bandMajor + bias, 16, 48);
+        countGlutSolidTorus(bandMinor, bandMajor + bias, 16, 48);
         glPopMatrix();
 
         glPushMatrix();
         glScalef(sx, sy, sz);
         glRotatef(90, 0, 1, 0);
         glRotatef(-14, 1, 0, 0);           
-        glutSolidTorus(bandMinor, bandMajor + bias, 16, 48);
+        countGlutSolidTorus(bandMinor, bandMajor + bias, 16, 48);
         glPopMatrix();
 
         glPushMatrix();
         glScalef(sx, sy, sz);
         glTranslatef(0.00f, 0.88f * earR, 0.36f * earR);  
         glScalef(0.22f * earR, 0.32f * earR, 0.10f * earR);
-        glutSolidCube(1.0f);
+        countGlutSolidCube(1.0f);
         glPopMatrix();
 
         glPopMatrix(); // ear local space
@@ -261,7 +261,7 @@ static void drawNeckStump(float R) {
     glPushMatrix();
     glTranslatef(0.0f, -0.40f * R, 0.0f);
     glScalef(0.55f * R, 0.30f * R, 0.55f * R);
-    glutSolidCube(1.0f);
+    countGlutSolidCube(1.0f);
     glPopMatrix();
 }
 
@@ -271,7 +271,7 @@ static void drawPatchOval(float R, float x, float y, float z) {
     glPushMatrix();
     glTranslatef(x, y, z);
     glScalef(0.22f * R, 0.28f * R, 0.070f * R);
-    glutSolidSphere(1.0f, 24, 18);
+    countGlutSolidSphere(1.0f, 24, 18);
     glPopMatrix();
 }
 
@@ -290,7 +290,7 @@ static void drawCuteEye(float R, float x, float y, float zPatchCenter, float loo
     glPushMatrix();
     glTranslatef(x - 0.010f * R + offX, y + 0.020f * R + offY, zEye);
     glScalef(0.165f * R, 0.165f * R, 0.060f * R);
-    glutSolidSphere(1.0f, 28, 22);
+    countGlutSolidSphere(1.0f, 28, 22);
     glPopMatrix();
 
     // Blue iris
@@ -298,7 +298,7 @@ static void drawCuteEye(float R, float x, float y, float zPatchCenter, float loo
     glPushMatrix();
     glTranslatef(x + offX, y + 0.012f * R + offY, zEye + 0.012f * R);
     glScalef(0.125f * R, 0.125f * R, 0.046f * R);
-    glutSolidSphere(1.0f, 28, 22);
+    countGlutSolidSphere(1.0f, 28, 22);
     glPopMatrix();
 
     // Black pupil
@@ -306,7 +306,7 @@ static void drawCuteEye(float R, float x, float y, float zPatchCenter, float loo
     glPushMatrix();
     glTranslatef(x + 0.004f * R + offX, y + 0.014f * R + offY, zEye + 0.020f * R);
     glScalef(0.070f * R, 0.070f * R, 0.028f * R);
-    glutSolidSphere(1.0f, 24, 18);
+    countGlutSolidSphere(1.0f, 24, 18);
     glPopMatrix();
 
     // Eye highlights
@@ -314,13 +314,13 @@ static void drawCuteEye(float R, float x, float y, float zPatchCenter, float loo
     glPushMatrix();
     glTranslatef(x - 0.030f * R + offX, y + 0.040f * R + offY, zEye + 0.026f * R);
     glScalef(0.024f * R, 0.024f * R, 0.016f * R);
-    glutSolidSphere(1.0f, 18, 14);
+    countGlutSolidSphere(1.0f, 18, 14);
     glPopMatrix();
 
     glPushMatrix();
     glTranslatef(x + 0.020f * R + offX, y - 0.014f * R + offY, zEye + 0.022f * R);
     glScalef(0.010f * R, 0.010f * R, 0.008f * R);
-    glutSolidSphere(1.0f, 14, 10);
+    countGlutSolidSphere(1.0f, 14, 10);
     glPopMatrix();
 
     glPopAttrib();
@@ -336,7 +336,7 @@ static void drawNoseMouth(float R, float zSurface) {
     glPushMatrix();
     glTranslatef(0.0f, -0.116f * R, zN);
     glScalef(0.060f * R, 0.040f * R, 0.032f * R);
-    glutSolidSphere(1.0f, 12, 10);
+    countGlutSolidSphere(1.0f, 12, 10);
     glPopMatrix();
 
     // Brown mouth
@@ -346,13 +346,16 @@ static void drawNoseMouth(float R, float zSurface) {
     glPushMatrix();
     glTranslatef(0.0f, -0.182f * R, zM);
     glScalef(0.088f * R, 0.022f * R, 0.014f * R);
-    glutSolidCube(1.0f);
+    countGlutSolidCube(1.0f);
     glPopMatrix();
     glPopAttrib();
 }
 
 // Main head assembly function
 void drawHeadUnit() {
+    // Set polygon counter to count head polygons
+    PolygonCounter::setCurrentPart(BodyPart::HEAD);
+    
     glPushMatrix();
 
     const float R = 0.66f;
@@ -406,7 +409,7 @@ void drawHeadUnit() {
     glPushMatrix();
     glTranslatef(0.0f, -0.36f * R, 0.0f);
     glRotatef(90, 1, 0, 0);
-    glutSolidTorus(0.030f, 0.34f, 16, 36);
+    countGlutSolidTorus(0.030f, 0.34f, 16, 36);
     glPopMatrix();
 
     // Neck stump
