@@ -123,6 +123,7 @@ static void drawHeadRibbonArc(float R, float elevDeg, float startDeg, float swee
     glPolygonOffset(-1.5f, -1.5f);
 
     matRibbon();
+    PrimitiveCounter::addPrimitive(GLPrimitive::GL_QUAD_STRIP_PRIM);
     glBegin(GL_QUAD_STRIP);
     for (int i = 0; i <= segs; ++i) {
         float t = (float)i / (float)segs;
@@ -248,7 +249,9 @@ static void drawTaperCupY(float rBottom, float rTop, float h, int slices = 36) {
     glRotatef(-90, 1, 0, 0);
     GLUquadric* q = gluNewQuadric();
     gluQuadricNormals(q, GLU_SMOOTH);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLU_CYLINDER_PRIM);
     gluCylinder(q, rBottom, rTop, h, slices, 1);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLU_DISK_PRIM);
     gluDisk(q, 0.0f, rBottom, slices, 1);
     gluDeleteQuadric(q);
     glPopMatrix();

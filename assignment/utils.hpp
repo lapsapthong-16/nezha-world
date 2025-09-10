@@ -64,7 +64,7 @@ void drawCylinderCannon(float br, double tr, double h);
 void drawSphereWithoutGLU(float radX, float radY, float radZ, float piDivide);
 void drawCircleCannon(float rx, float ry);
 
-// Polygon counting system
+// GL Primitive counting system
 enum class BodyPart {
     HEAD,
     ARMS,
@@ -75,19 +75,58 @@ enum class BodyPart {
     TOTAL_PARTS
 };
 
-class PolygonCounter {
+enum class GLPrimitive {
+    GL_POINTS_PRIM,
+    GL_LINES_PRIM,
+    GL_LINE_STRIP_PRIM,
+    GL_LINE_LOOP_PRIM,
+    GL_TRIANGLES_PRIM,
+    GL_TRIANGLE_STRIP_PRIM,
+    GL_TRIANGLE_FAN_PRIM,
+    GL_QUADS_PRIM,
+    GL_QUAD_STRIP_PRIM,
+    GL_POLYGON_PRIM,
+    GLU_SPHERE_PRIM,
+    GLU_CYLINDER_PRIM,
+    GLU_DISK_PRIM,
+    GLUT_CUBE_PRIM,
+    GLUT_SPHERE_PRIM,
+    GLUT_TORUS_PRIM,
+    TOTAL_PRIMITIVES
+};
+
+class PrimitiveCounter {
 public:
     static void reset();
     static void setCurrentPart(BodyPart part);
-    static void addPolygons(int count);
+    static void addPrimitive(GLPrimitive primitive, int count = 1);
     static void printToConsole();
-    static int getTotalPolygons();
-    static int getPartPolygons(BodyPart part);
+    static int getTotalPrimitives();
+    static int getPartPrimitives(BodyPart part);
+    static int getPrimitiveCounts(BodyPart part, GLPrimitive primitive);
+    static void pause();
+    static void resume();
+    static bool isPaused();
     
 private:
-    static int partCounts[static_cast<int>(BodyPart::TOTAL_PARTS)];
+    static int partCounts[static_cast<int>(BodyPart::TOTAL_PARTS)][static_cast<int>(GLPrimitive::TOTAL_PRIMITIVES)];
     static BodyPart currentPart;
     static const char* partNames[static_cast<int>(BodyPart::TOTAL_PARTS)];
+    static const char* primitiveNames[static_cast<int>(GLPrimitive::TOTAL_PRIMITIVES)];
+};
+
+// Legacy support - redirect to PrimitiveCounter
+class PolygonCounter {
+public:
+    static void reset() { PrimitiveCounter::reset(); }
+    static void setCurrentPart(BodyPart part) { PrimitiveCounter::setCurrentPart(part); }
+    static void addPolygons(int count) { /* Legacy function - no longer used */ }
+    static void printToConsole() { PrimitiveCounter::printToConsole(); }
+    static int getTotalPolygons() { return PrimitiveCounter::getTotalPrimitives(); }
+    static int getPartPolygons(BodyPart part) { return PrimitiveCounter::getPartPrimitives(part); }
+    static void pause() { PrimitiveCounter::pause(); }
+    static void resume() { PrimitiveCounter::resume(); }
+    static bool isPaused() { return PrimitiveCounter::isPaused(); }
 };
 
 // Helper functions for counting GLUT primitives

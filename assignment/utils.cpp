@@ -70,7 +70,7 @@ void matPandaWhite() {
 }
 
 void drawSpherePrim(float radius, int slices, int stacks) {
-    PolygonCounter::addPolygons(slices * stacks * 2);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLU_SPHERE_PRIM);
     GLUquadric* q = gluNewQuadric();
     gluQuadricNormals(q, GLU_SMOOTH);
     gluSphere(q, radius, slices, stacks);
@@ -78,8 +78,8 @@ void drawSpherePrim(float radius, int slices, int stacks) {
 }
 
 void drawCappedCylinder(float r, float h, int slices) {
-    // Cylinder sides: slices * 2 triangles, plus 2 caps of slices triangles each
-    PolygonCounter::addPolygons(slices * 2 + slices + slices);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLU_CYLINDER_PRIM);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLU_DISK_PRIM, 2); // Two disk caps
     GLUquadric* q = gluNewQuadric();
     gluQuadricNormals(q, GLU_SMOOTH);
     gluCylinder(q, r, r, h, slices, 1);
@@ -92,7 +92,7 @@ void drawCappedCylinder(float r, float h, int slices) {
 }
 
 void drawOpenCylinderY(float rBot, float rTop, float h, float startDeg, float sweepDeg, int slices) {
-    PolygonCounter::addPolygons(slices * 2);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GL_QUAD_STRIP_PRIM);
     const float y0 = -h * 0.5f, y1 = h * 0.5f;
     glBegin(GL_QUAD_STRIP);
     for (int i = 0; i <= slices; ++i) {
@@ -140,7 +140,7 @@ void drawStitchStrip(const Vec3& A, const Vec3& B, int count, float r) {
 }
 
 void drawCuboidCannon(float cubX, float cubY, float cubZ) {
-    PolygonCounter::addPolygons(12);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GL_QUADS_PRIM);
     glBegin(GL_QUADS);
     glNormal3f(0, -1, 0);
     glVertex3f(-cubX, -cubY, -cubZ);
@@ -181,7 +181,7 @@ void drawCuboidCannon(float cubX, float cubY, float cubZ) {
 }
 
 void drawCuboidBasedZero(float cubX, float cubY, float cubZ) {
-    PolygonCounter::addPolygons(12);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GL_QUADS_PRIM);
     glBegin(GL_QUADS);
     glNormal3f(0, -1, 0);
     glVertex3f(-cubX, -cubY, 0);
@@ -222,7 +222,7 @@ void drawCuboidBasedZero(float cubX, float cubY, float cubZ) {
 }
 
 void drawTriangularPrism(float triPx, float triPy, float triPz) {
-    PolygonCounter::addPolygons(8);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GL_QUADS_PRIM);
     glBegin(GL_QUADS);
     glNormal3f(0, -1, 0);
     glVertex3f(triPx, 0, triPz);
@@ -251,6 +251,7 @@ void drawTriangularPrism(float triPx, float triPy, float triPz) {
     glVertex3f(triPx, 0, triPz);
     glEnd();
 
+    PrimitiveCounter::addPrimitive(GLPrimitive::GL_TRIANGLES_PRIM);
     glBegin(GL_TRIANGLES);
     glNormal3f(1, 0, 0);
     glVertex3f(triPx, 0, triPz);
@@ -265,13 +266,13 @@ void drawTriangularPrism(float triPx, float triPy, float triPz) {
 }
 
 void drawCylinderCannon(float br, double tr, double h) {
-    // Cylinder: slices * 2 triangles (top and bottom rings), plus 2 end caps of slices triangles each
-    PolygonCounter::addPolygons(30 * 2 + 30 + 30);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLU_CYLINDER_PRIM);
     GLUquadric* cylinder = gluNewQuadric();
     gluQuadricNormals(cylinder, GLU_SMOOTH);
     gluCylinder(cylinder, br, tr, h, 30, 30);
     gluDeleteQuadric(cylinder);
 
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLU_DISK_PRIM, 2); // Two disk caps
     GLUquadric* disk = gluNewQuadric();
     gluQuadricNormals(disk, GLU_SMOOTH);
     gluDisk(disk, 0.0, br, 30, 1);
@@ -284,7 +285,7 @@ void drawCylinderCannon(float br, double tr, double h) {
 
 void drawCircleCannon(float rx, float ry) {
     const int segments = 30;
-    PolygonCounter::addPolygons(segments);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GL_TRIANGLE_FAN_PRIM);
     glBegin(GL_TRIANGLE_FAN);
     glNormal3f(0.0f, 0.0f, 1.0f);
     glVertex3f(0.0f, 0.0f, 0.0f);
@@ -302,9 +303,9 @@ void drawSphereWithoutGLU(float radX, float radY, float radZ, float piDivide) {
     GLfloat x, y, z, sliceA, stackA;
     int sliceNo = 30, stackNo = 30;
     int sliceCount = (int)(2 * PI / piDivide / (PI / sliceNo));
-    PolygonCounter::addPolygons(sliceCount * stackNo * 2);
-
+    
     for (sliceA = 0.0f; sliceA < 2 * PI / piDivide; sliceA += PI / sliceNo) {
+        PrimitiveCounter::addPrimitive(GLPrimitive::GL_TRIANGLE_STRIP_PRIM);
         glBegin(GL_TRIANGLE_STRIP);
         for (stackA = 0.0f; stackA < 2 * PI / piDivide; stackA += PI / stackNo) {
             x = radX * cosf(stackA) * sinf(sliceA);
@@ -324,55 +325,103 @@ void drawSphereWithoutGLU(float radX, float radY, float radZ, float piDivide) {
     }
 }
 
-int PolygonCounter::partCounts[static_cast<int>(BodyPart::TOTAL_PARTS)] = { 0 };
-BodyPart PolygonCounter::currentPart = BodyPart::HEAD;
+// PrimitiveCounter implementation
+int PrimitiveCounter::partCounts[static_cast<int>(BodyPart::TOTAL_PARTS)][static_cast<int>(GLPrimitive::TOTAL_PRIMITIVES)] = { 0 };
+BodyPart PrimitiveCounter::currentPart = BodyPart::HEAD;
+static int g_countPauseDepth = 0;
 
-const char* PolygonCounter::partNames[static_cast<int>(BodyPart::TOTAL_PARTS)] = {
+const char* PrimitiveCounter::partNames[static_cast<int>(BodyPart::TOTAL_PARTS)] = {
     "Head","Arms","Torso","Legs","Shorts","Cannon"
 };
 
-void PolygonCounter::reset() {
-    for (int i = 0; i < static_cast<int>(BodyPart::TOTAL_PARTS); ++i) partCounts[i] = 0;
-}
+const char* PrimitiveCounter::primitiveNames[static_cast<int>(GLPrimitive::TOTAL_PRIMITIVES)] = {
+    "GL_POINTS", "GL_LINES", "GL_LINE_STRIP", "GL_LINE_LOOP",
+    "GL_TRIANGLES", "GL_TRIANGLE_STRIP", "GL_TRIANGLE_FAN",
+    "GL_QUADS", "GL_QUAD_STRIP", "GL_POLYGON",
+    "GLU_SPHERE", "GLU_CYLINDER", "GLU_DISK",
+    "GLUT_CUBE", "GLUT_SPHERE", "GLUT_TORUS"
+};
 
-void PolygonCounter::setCurrentPart(BodyPart part) { currentPart = part; }
-
-void PolygonCounter::addPolygons(int count) {
-    partCounts[static_cast<int>(currentPart)] += count;
-}
-
-// Removed displayCounts() - using console output only
-
-void PolygonCounter::printToConsole() {
-    std::printf("\n=== POLYGON COUNT REPORT ===\n");
+void PrimitiveCounter::reset() {
     for (int i = 0; i < static_cast<int>(BodyPart::TOTAL_PARTS); ++i) {
-        std::printf("%s: %d triangles\n", partNames[i], partCounts[i]);
+        for (int j = 0; j < static_cast<int>(GLPrimitive::TOTAL_PRIMITIVES); ++j) {
+            partCounts[i][j] = 0;
+        }
     }
-    std::printf("TOTAL: %d triangles\n", getTotalPolygons());
-    std::printf("============================\n\n");
 }
 
-int PolygonCounter::getTotalPolygons() {
+void PrimitiveCounter::setCurrentPart(BodyPart part) { currentPart = part; }
+
+void PrimitiveCounter::addPrimitive(GLPrimitive primitive, int count) {
+    if (g_countPauseDepth == 0)
+        partCounts[static_cast<int>(currentPart)][static_cast<int>(primitive)] += count;
+}
+
+void PrimitiveCounter::printToConsole() {
+    std::printf("\n=== GL PRIMITIVE COUNT REPORT ===\n");
+    for (int i = 0; i < static_cast<int>(BodyPart::TOTAL_PARTS); ++i) {
+        std::printf("\n%s:\n", partNames[i]);
+        int partTotal = 0;
+        for (int j = 0; j < static_cast<int>(GLPrimitive::TOTAL_PRIMITIVES); ++j) {
+            if (partCounts[i][j] > 0) {
+                std::printf("  %s: %d calls\n", primitiveNames[j], partCounts[i][j]);
+                partTotal += partCounts[i][j];
+            }
+        }
+        std::printf("  Part Total: %d primitives\n", partTotal);
+    }
+    std::printf("\nTOTAL PRIMITIVES: %d calls\n", getTotalPrimitives());
+    std::printf("==================================\n");
+    
+    // Show pause status
+    std::printf("Counter status: %s\n", 
+        g_countPauseDepth > 0 ? "PAUSED" : "ACTIVE");
+    if (g_countPauseDepth > 0) {
+        std::printf("Pause depth: %d\n", g_countPauseDepth);
+    }
+    std::printf("\n");
+}
+
+int PrimitiveCounter::getTotalPrimitives() {
     int total = 0;
-    for (int i = 0; i < static_cast<int>(BodyPart::TOTAL_PARTS); ++i) total += partCounts[i];
+    for (int i = 0; i < static_cast<int>(BodyPart::TOTAL_PARTS); ++i) {
+        for (int j = 0; j < static_cast<int>(GLPrimitive::TOTAL_PRIMITIVES); ++j) {
+            total += partCounts[i][j];
+        }
+    }
     return total;
 }
 
-int PolygonCounter::getPartPolygons(BodyPart part) {
-    return partCounts[static_cast<int>(part)];
+int PrimitiveCounter::getPartPrimitives(BodyPart part) {
+    int total = 0;
+    int partIndex = static_cast<int>(part);
+    for (int j = 0; j < static_cast<int>(GLPrimitive::TOTAL_PRIMITIVES); ++j) {
+        total += partCounts[partIndex][j];
+    }
+    return total;
+}
+
+int PrimitiveCounter::getPrimitiveCounts(BodyPart part, GLPrimitive primitive) {
+    return partCounts[static_cast<int>(part)][static_cast<int>(primitive)];
 }
 
 void countGlutSolidSphere(double radius, int slices, int stacks) {
-    PolygonCounter::addPolygons(slices * stacks * 2);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLUT_SPHERE_PRIM);
     glutSolidSphere(radius, slices, stacks);
 }
 
 void countGlutSolidCube(double size) {
-    PolygonCounter::addPolygons(12);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLUT_CUBE_PRIM);
     glutSolidCube(size);
 }
 
+void PrimitiveCounter::pause() { ++g_countPauseDepth; }
+
+void PrimitiveCounter::resume() { if (g_countPauseDepth > 0) --g_countPauseDepth; }
+
+bool PrimitiveCounter::isPaused() { return g_countPauseDepth > 0; }
+
 void countGlutSolidTorus(double innerRadius, double outerRadius, int nsides, int rings) {
-    PolygonCounter::addPolygons(nsides * rings * 2);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLUT_TORUS_PRIM);
     glutSolidTorus(innerRadius, outerRadius, nsides, rings);
 }

@@ -21,6 +21,7 @@ void drawShorts() {
     GLUquadric* qb = gluNewQuadric();
     gluQuadricNormals(qb, GLU_SMOOTH);
     const float waistR = MS.torsoBotR * 0.95f;
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLU_CYLINDER_PRIM);
     gluCylinder(qb, waistR, waistR, 0.05f, 44, 1);
     gluDeleteQuadric(qb);
     glPopMatrix();
@@ -78,6 +79,7 @@ void drawShorts() {
     glRotatef(-90, 1, 0, 0);
     GLUquadric* q1 = gluNewQuadric(); 
     gluQuadricNormals(q1, GLU_SMOOTH);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLU_CYLINDER_PRIM);
     gluCylinder(q1, cuffRTop, cuffRBot, cuffH, 40, 1);
     gluDeleteQuadric(q1);
     glPopMatrix();
@@ -88,6 +90,7 @@ void drawShorts() {
     glRotatef(-90, 1, 0, 0);
     GLUquadric* q2 = gluNewQuadric(); 
     gluQuadricNormals(q2, GLU_SMOOTH);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLU_CYLINDER_PRIM);
     gluCylinder(q2, cuffRTop, cuffRBot, cuffH, 40, 1);
     gluDeleteQuadric(q2);
     glPopMatrix();

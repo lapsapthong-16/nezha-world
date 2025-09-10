@@ -130,7 +130,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model.cpp" />
     <ClCompile Include="shorts.cpp" />
-    <ClCompile Include="test.cpp" />
     <ClCompile Include="torso.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>

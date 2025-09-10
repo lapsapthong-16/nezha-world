@@ -48,9 +48,6 @@
     <ClCompile Include="cannon.cpp">
       <Filter>Source Files\BodyParts</Filter>
     </ClCompile>
-    <ClCompile Include="test.cpp">
-      <Filter>Source Files\BodyParts</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="arms.hpp">

@@ -51,6 +51,7 @@ static void drawGoldEdgeAtDeg(float deg) {
     if (wasCull) glDisable(GL_CULL_FACE);
 
     matRope();
+    PrimitiveCounter::addPrimitive(GLPrimitive::GL_QUADS_PRIM);
     glBegin(GL_QUADS);
     glNormal3f(cs, 0.0f, sn);
     glVertex3f(xBi, y0, zBi);
@@ -114,6 +115,7 @@ static void drawPandaTorsoCore() {
 
             glPushMatrix();
             glTranslatef(0, 0, i * sliceHeight);
+            PrimitiveCounter::addPrimitive(GLPrimitive::GL_QUADS_PRIM);
             glBegin(GL_QUADS);
             glNormal3f(cosf(a0), 0, sinf(a0));
             glVertex3f(r0 * cosf(a0), r0 * sinf(a0), 0);
@@ -130,10 +132,12 @@ static void drawPandaTorsoCore() {
 
     // End caps
     matPandaWhiteMatchHead();
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLU_DISK_PRIM);
     gluDisk(q, 0.0f, rBot, 32, 1);
     matFurBlackMatte();
     glPushMatrix();
     glTranslatef(0, 0, h);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLU_DISK_PRIM);
     gluDisk(q, 0.0f, rTop, 32, 1);
     glPopMatrix();
 
@@ -150,6 +154,7 @@ static void drawRingArcY(float y, float rIn, float rOut, float startDeg, float s
     glTranslatef(0.0f, y, 0.0f);
     glRotatef(-90.0f, 1, 0, 0);
 
+    PrimitiveCounter::addPrimitive(GLPrimitive::GL_QUAD_STRIP_PRIM);
     glBegin(GL_QUAD_STRIP);
     for (int i = 0; i <= segs; ++i) {
         float deg = startDeg + step * float(i);
@@ -280,10 +285,13 @@ static void drawWaistSeal() {
 
     GLUquadric* q = gluNewQuadric();
     gluQuadricNormals(q, GLU_SMOOTH);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLU_CYLINDER_PRIM);
     gluCylinder(q, rBot, rTop, h, 44, 1);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLU_DISK_PRIM);
     gluDisk(q, 0.0f, rBot, 44, 1);
     glPushMatrix();
     glTranslatef(0, 0, h);
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLU_DISK_PRIM);
     gluDisk(q, 0.0f, rTop, 44, 1);
     glPopMatrix();
     gluDeleteQuadric(q);
@@ -390,6 +398,7 @@ void drawHipWrap() {
     const float h = 0.12f;
     const float r = MS.torsoBotR * 0.90f;
 
+    PrimitiveCounter::addPrimitive(GLPrimitive::GLU_CYLINDER_PRIM);
     GLUquadric* q = gluNewQuadric();
     gluQuadricNormals(q, GLU_SMOOTH);
     gluCylinder(q, r, r, h, 44, 1);
