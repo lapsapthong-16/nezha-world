@@ -43,7 +43,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -70,6 +70,14 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>C:\freeglut\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\freeglut\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>C:\freeglut\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\freeglut\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -102,10 +110,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\vcpkg\installed\x64-windows\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\vcpkg\installed\x64-windows\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freeglut.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalOptions>/NODEFAULTLIB:freeglutd.lib
+ %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -116,32 +129,51 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\vcpkg\installed\x64-windows\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\vcpkg\installed\x64-windows\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freeglut.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="animation.cpp" />
     <ClCompile Include="arms.cpp" />
     <ClCompile Include="cannon.cpp" />
+    <ClCompile Include="customization.cpp" />
+    <ClCompile Include="dragonHead.cpp" />
+    <ClCompile Include="flower.cpp" />
     <ClCompile Include="head.cpp" />
     <ClCompile Include="legs.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="meditation.cpp" />
     <ClCompile Include="model.cpp" />
+    <ClCompile Include="nezha_bg.cpp" />
+    <ClCompile Include="prayAnimation.cpp" />
     <ClCompile Include="shorts.cpp" />
     <ClCompile Include="torso.cpp" />
     <ClCompile Include="utils.cpp" />
+    <ClCompile Include="weapon.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="animation.hpp" />
     <ClInclude Include="arms.hpp" />
     <ClInclude Include="cannon.hpp" />
+    <ClInclude Include="customization.hpp" />
+    <ClInclude Include="dragonHead.hpp" />
+    <ClInclude Include="flower.hpp" />
     <ClInclude Include="head.hpp" />
     <ClInclude Include="legs.hpp" />
+    <ClInclude Include="meditation.hpp" />
     <ClInclude Include="model.hpp" />
+    <ClInclude Include="nezha_bg.hpp" />
+    <ClInclude Include="prayAnimation.hpp" />
     <ClInclude Include="shorts.hpp" />
     <ClInclude Include="torso.hpp" />
     <ClInclude Include="utils.hpp" />
+    <ClInclude Include="weapon.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

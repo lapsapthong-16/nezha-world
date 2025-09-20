@@ -48,6 +48,30 @@
     <ClCompile Include="cannon.cpp">
       <Filter>Source Files\BodyParts</Filter>
     </ClCompile>
+    <ClCompile Include="weapon.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
+    <ClCompile Include="customization.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
+    <ClCompile Include="animation.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
+    <ClCompile Include="dragonHead.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
+    <ClCompile Include="prayAnimation.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
+    <ClCompile Include="flower.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
+    <ClCompile Include="meditation.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
+    <ClCompile Include="nezha_bg.cpp">
+      <Filter>Source Files\BodyParts</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="arms.hpp">
@@ -73,6 +97,30 @@
     </ClInclude>
     <ClInclude Include="cannon.hpp">
       <Filter>Header Files\BodyParts</Filter>
+    </ClInclude>
+    <ClInclude Include="customization.hpp">
+      <Filter>Header Files\BodyParts</Filter>
+    </ClInclude>
+    <ClInclude Include="weapon.hpp">
+      <Filter>Header Files\BodyParts</Filter>
+    </ClInclude>
+    <ClInclude Include="animation.hpp">
+      <Filter>Header Files\BodyParts</Filter>
+    </ClInclude>
+    <ClInclude Include="dragonHead.hpp">
+      <Filter>Header Files\BodyParts</Filter>
+    </ClInclude>
+    <ClInclude Include="prayAnimation.hpp">
+      <Filter>Header Files\BodyParts</Filter>
+    </ClInclude>
+    <ClInclude Include="flower.hpp">
+      <Filter>Header Files\BodyParts</Filter>
+    </ClInclude>
+    <ClInclude Include="meditation.hpp">
+      <Filter>Header Files\BodyParts</Filter>
+    </ClInclude>
+    <ClInclude Include="nezha_bg.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

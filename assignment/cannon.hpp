@@ -1,48 +1,43 @@
 #pragma once
 #include "utils.hpp"
 
-// Cannon state variables
+// ===== Cannon state =====
 struct CannonState {
     // Animation state
     float canonRot = 0.0f;
     float canonRotSpeed = 0.0f;
-    bool weaponOn = false;
-    bool startFire = false;
-    
+    bool  weaponOn = false;
+    bool  startFire = false;
+
     // Shooting animation state
-    bool shootOn = false;
-    bool endShoot = true;
+    bool  shootOn = false;
+    bool  endShoot = true;
     float attack = 0.0f;
     float attackLength = 0.0f;
     float powerBall = 0.0f;
     float powerBallSize = 0.0f;
     float attackRadius = 0.0f;
-    
-    // Timing and control
-    bool leftShootOn = false;
-    bool rightShootOn = false;
+
+    // Optional sides
+    bool  leftShootOn = false;
+    bool  rightShootOn = false;
+
+    // Visibility control
+    bool  visible = true;
 };
 
-// Global cannon state instance
 extern CannonState cannonState;
 
-// Cannon component functions
-void drawCannonBarrel();
-void drawCannonMuzzleDesign();
-void drawCannonShell();
-void drawCannonStand();
-void drawCannonDesignElements();
+// ===== Public API =====
+void drawLaserCannonMounted();       // for shoulder (no stand)
+void drawLaserCannonStandalone();    // ground turret (with stand)
 
-// Main cannon drawing function
-void drawLaserCannon();
+// Back-compat alias: mounted version
+inline void drawLaserCannon() { drawLaserCannonMounted(); }
 
-// Animation functions
+void drawLaserBeam();
 void updateCannonAnimation();
 void updateShootingAnimation();
-
-// Laser beam drawing
-void drawLaserBeam();
-
-// Control functions
 void toggleCannon();
 void fireCannon();
+void toggleCannonVisibility();
